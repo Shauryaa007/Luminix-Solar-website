@@ -43,7 +43,7 @@ export default function Home() {
 
         {/* Section Coming Soon - temporary */}
         <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Sections below - Coming Soon....
+          Sections below - Coming Soon....(develop)
         </h2>
 
         {/* Section 6: Company Highlights & Key Numbers Counter */}
