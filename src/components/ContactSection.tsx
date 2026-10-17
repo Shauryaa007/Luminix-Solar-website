@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Phone,
   Mail,
@@ -81,6 +81,11 @@ export default function ContactSection({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [minDate, setMinDate] = useState<string>('');
+
+  useEffect(() => {
+    setMinDate(new Date().toLocaleDateString('en-CA'));
+  }, []);
 
   const updateField = (
     field: keyof typeof formData,
@@ -173,7 +178,7 @@ export default function ContactSection({
         <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800 shadow-sm">
             <Sun className="h-4 w-4" />
-            Let's talk solar
+            Let&apos;s talk solar
           </div>
 
           <h2 className="text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
@@ -643,7 +648,7 @@ export default function ContactSection({
                         <input
                           id="contact-date"
                           type="date"
-                          min={new Date().toLocaleDateString('en-CA')}
+                          min={minDate || undefined}
                           value={formData.preferredDate}
                           onChange={(e) =>
                             updateField('preferredDate', e.target.value)
