@@ -117,17 +117,15 @@ export default function HeroSection({
               </div>
 
               <h1 className="mt-7 max-w-2xl text-4xl font-medium leading-[1.12] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
-                A brighter home.
+                The Future of
                 <br />
                 <span className="font-semibold text-emerald-300">
-                  A smarter future.
+                  Green Energy
                 </span>
               </h1>
 
               <p className="mt-6 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                Make the most of the sunlight. Discover rooftop
-                solar solutions designed around your energy needs,
-                property, and long-term savings.
+                Power your home with solar. Save more with every sunny day.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -213,7 +211,7 @@ export default function HeroSection({
 
                     <p className="mt-3 text-sm leading-6 text-slate-600">
                       This demo has simulated your submission.
-                      Connect your backend to receive real inquiries.
+                      Backend yet to be connected to receive real inquiries.
                     </p>
 
                     <button
@@ -359,10 +357,6 @@ export default function HeroSection({
                         <ArrowRight className="h-4 w-4" />
                       )}
                     </button>
-                    <p className="text-center text-sm text-slate-500">
-                      Have questions?{' '}
-                      <a href={`tel:${COMPANY_INFO.phone}`} className="font-semibold text-emerald-800 hover:underline">Speak with our team</a>
-                    </p>
 
                   </form>
                 )}
@@ -389,9 +383,6 @@ export default function HeroSection({
 
         {/* Minimal brand strip */}
         <div className="flex flex-col gap-4 border-b border-slate-200 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-slate-400">
-            Residential and commercial solar solutions
-          </p>
         </div>
       </div>
     </section>

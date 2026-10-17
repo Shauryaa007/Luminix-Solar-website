@@ -88,12 +88,7 @@ export default function Navbar({
           <div className="flex min-w-0 items-center gap-3">
             <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold tracking-wide text-emerald-100/90">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-              Your partner in solar energy
-            </span>
-            <span className="h-3 w-px bg-white/20" />
-            <span className="hidden items-center gap-1.5 text-[11px] text-emerald-100/75 lg:inline-flex">
-              <Sun className="h-3.5 w-3.5 text-emerald-300" />
-              Explore cleaner energy for your property
+              Residential and commercial solar solutions
             </span>
           </div>
 
