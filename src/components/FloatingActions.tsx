@@ -42,9 +42,9 @@ export default function FloatingActions() {
   const whatsappMessage =
     'Hello LuminixSolar, I am interested in rooftop solar solutions. Please share more details.';
 
-  const whatsappUrl = `https://wa.me/${String(
-    COMPANY_INFO.whatsapp
-  ).replace(/\D/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
+  // const whatsappUrl = `https://wa.me/${String(
+  //   COMPANY_INFO.whatsapp
+  // ).replace(/\D/g, '')}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div
@@ -53,11 +53,10 @@ export default function FloatingActions() {
     >
       {/* Back to top */}
       <div
-        className={`transition-all duration-300 ${
-          showBackToTop
-            ? 'translate-y-0 opacity-100'
-            : 'pointer-events-none translate-y-3 opacity-0'
-        }`}
+        className={`transition-all duration-300 ${showBackToTop
+          ? 'translate-y-0 opacity-100'
+          : 'pointer-events-none translate-y-3 opacity-0'
+          }`}
       >
         <button
           type="button"
@@ -81,7 +80,7 @@ export default function FloatingActions() {
 
       {/* WhatsApp contact */}
       <a
-        href={whatsappUrl}
+        // href={whatsappUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Contact LuminixSolar on WhatsApp"
@@ -96,11 +95,10 @@ export default function FloatingActions() {
         </span>
 
         <span
-          className={`grid overflow-hidden transition-all duration-300 ${
-            showLabel
-              ? 'grid-cols-[1fr] opacity-100'
-              : 'grid-cols-[0fr] opacity-0 sm:grid-cols-[1fr] sm:opacity-100'
-          }`}
+          className={`grid overflow-hidden transition-all duration-300 ${showLabel
+            ? 'grid-cols-[1fr] opacity-100'
+            : 'grid-cols-[0fr] opacity-0 sm:grid-cols-[1fr] sm:opacity-100'
+            }`}
         >
           <span className="min-w-0 whitespace-nowrap">
             <span className="flex items-center gap-1 text-sm font-semibold leading-5">
