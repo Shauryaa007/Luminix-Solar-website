@@ -80,9 +80,8 @@ export default function Navbar({
     <header className="fixed inset-x-0 top-0 z-50">
       {/* Slim information bar */}
       <div
-        className={`hidden overflow-hidden bg-[#123d2b] text-emerald-50 transition-all duration-300 md:block ${
-          isScrolled ? 'h-0 opacity-0' : 'h-10 opacity-100'
-        }`}
+        className={`hidden overflow-hidden bg-[#123d2b] text-emerald-50 transition-all duration-300 md:block ${isScrolled ? 'h-0 opacity-0' : 'h-10 opacity-100'
+          }`}
         aria-hidden={isScrolled}
       >
         <div className="mx-auto flex h-10 max-w-[1600px] items-center justify-between gap-4 px-6 lg:px-10">
@@ -121,16 +120,14 @@ export default function Navbar({
       {/* Main navbar */}
       <nav
         aria-label="Main navigation"
-        className={`relative border-b transition-all duration-300 ${
-          isScrolled
-            ? 'border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur-xl'
-            : 'border-slate-200/70 bg-white/95 backdrop-blur-lg'
-        }`}
+        className={`relative border-b transition-all duration-300 ${isScrolled
+          ? 'border-emerald-100/80 bg-white/95 shadow-sm backdrop-blur-xl'
+          : 'border-slate-200/70 bg-white/95 backdrop-blur-lg'
+          }`}
       >
         <div
-          className={`mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6 lg:px-10 ${
-            isScrolled ? 'h-[68px]' : 'h-[76px]'
-          }`}
+          className={`mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6 lg:px-10 ${isScrolled ? 'h-[68px]' : 'h-[76px]'
+            }`}
         >
           {/* Brand */}
           <a
@@ -154,9 +151,7 @@ export default function Navbar({
               <span className="block whitespace-nowrap text-[19px] font-extrabold leading-none tracking-tight text-[#173d2d] sm:text-[22px]">
                 Luminix<span className="text-emerald-600">Solar</span>
               </span>
-              <span className="mt-1.5 hidden whitespace-nowrap text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:block">
-                Clean energy. Brighter future.
-              </span>
+
             </span>
           </a>
 
@@ -175,37 +170,27 @@ export default function Navbar({
 
           {/* Desktop actions */}
           <div className="hidden shrink-0 items-center gap-2.5 xl:flex">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Chat with LuminixSolar on WhatsApp"
-              title="Chat with us on WhatsApp"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-white text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-600/10"
-            >
-              <MessageCircle className="h-[18px] w-[18px]" />
-            </a>
 
-            <button
+            {/* <button
               type="button"
               onClick={handleConsultation}
               className="group inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-[#174b35] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#103b29] hover:shadow-md focus:outline-none focus:ring-4 focus:ring-emerald-700/20 active:scale-[0.98]"
             >
               Get a Quote
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </button>
+            </button> */}
           </div>
 
           {/* Tablet and mobile actions */}
           <div className="flex shrink-0 items-center gap-2 xl:hidden">
-            <button
+            {/* <button
               type="button"
               onClick={handleConsultation}
               className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-[#174b35] px-3 text-xs font-bold text-white transition hover:bg-[#103b29] focus:outline-none focus:ring-4 focus:ring-emerald-700/20 sm:px-4 sm:text-sm"
             >
               Get a Quote
               <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            </button>
+            </button> */}
 
             <button
               type="button"
