@@ -88,9 +88,8 @@ export default function HeroSection({
               <div
                 key={imgSrc}
                 aria-hidden={!isActive}
-                className={`absolute inset-0 -z-20 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
-                  isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
+                className={`absolute inset-0 -z-20 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                  }`}
                 style={{
                   backgroundImage: `url('${imgSrc}')`,
                 }}
@@ -118,17 +117,15 @@ export default function HeroSection({
               </div>
 
               <h1 className="mt-7 max-w-2xl text-4xl font-medium leading-[1.12] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
-                A brighter home.
+                The Future of
                 <br />
                 <span className="font-semibold text-emerald-300">
-                  A smarter future.
+                  Green Energy
                 </span>
               </h1>
 
               <p className="mt-6 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                Make the most of the sunlight. Discover rooftop
-                solar solutions designed around your energy needs,
-                property, and long-term savings.
+                Power your home with solar. Save more with every sunny day.
               </p>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -183,12 +180,16 @@ export default function HeroSection({
 
             {/* Consultation card */}
             <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-white/60 bg-white p-5 shadow-2xl shadow-black/20 sm:p-7 lg:p-8">
+              <div className="relative rounded-2xl border border-white/60 bg-white p-5 shadow-2xl shadow-black/20 sm:p-7 lg:p-8">
+                {/* Free consultation pill label */}
+                <div className="absolute top-0 right-6 -translate-y-1/2 z-10 rounded-full bg-amber-500 px-4 py-1 text-xs font-bold text-slate-950 shadow-md sm:right-8 sm:text-sm">
+                  Free consultation
+                </div>
 
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-800">
-                      Let's get started
+                      Let&apos;s get started
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">
                       Your solar plan starts here.
@@ -198,16 +199,6 @@ export default function HeroSection({
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
                     <Sun className="h-5 w-5" />
                   </div>
-                </div>
-
-                <p className="mt-3 text-sm leading-6 text-slate-500">
-                  Share a few details to explore the right solution
-                  for your property.
-                </p>
-
-                <div className="my-5 flex items-center gap-2 border-y border-slate-100 py-3 text-xs text-slate-500">
-                  <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-700" />
-                  Free consultation · No obligation
                 </div>
 
                 {isSubmitted ? (
@@ -220,7 +211,7 @@ export default function HeroSection({
 
                     <p className="mt-3 text-sm leading-6 text-slate-600">
                       This demo has simulated your submission.
-                      Connect your backend to receive real inquiries.
+                      Backend yet to be connected to receive real inquiries.
                     </p>
 
                     <button
@@ -367,9 +358,6 @@ export default function HeroSection({
                       )}
                     </button>
 
-                    <p className="text-center text-xs leading-5 text-slate-400">
-                      Your details will be used to respond to your inquiry.
-                    </p>
                   </form>
                 )}
               </div>
@@ -384,11 +372,10 @@ export default function HeroSection({
                 type="button"
                 onClick={() => setCurrentBgIndex(i)}
                 aria-label={`Go to slide ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  currentBgIndex === i
-                    ? 'w-6 bg-white'
-                    : 'w-1.5 bg-white/40 hover:bg-white/60'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-500 ${currentBgIndex === i
+                  ? 'w-6 bg-white'
+                  : 'w-1.5 bg-white/40 hover:bg-white/60'
+                  }`}
               />
             ))}
           </div>
@@ -396,19 +383,6 @@ export default function HeroSection({
 
         {/* Minimal brand strip */}
         <div className="flex flex-col gap-4 border-b border-slate-200 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-slate-500">
-            Have questions?{' '}
-            <a
-              href={`tel:${COMPANY_INFO.phone}`}
-              className="font-semibold text-emerald-800 hover:underline"
-            >
-              Speak with our team
-            </a>
-          </p>
-
-          <p className="text-xs text-slate-400">
-            Residential and commercial solar solutions
-          </p>
         </div>
       </div>
     </section>
