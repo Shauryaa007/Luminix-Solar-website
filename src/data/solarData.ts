@@ -50,23 +50,23 @@ export interface FaqItem {
 }
 
 export const COMPANY_INFO = {
-  name: "Luminix Solar Energy Solutions Pvt. Ltd.",
-  brandName: "Luminix Solar",
+  name: "LUMINIX SOLAR PVT. LTD.",
+  brandName: "LUMINIX SOLAR",
   tagline: "Clean Energy for a Brighter Tomorrow",
   logo: "/images/logo.png",
-  establishedYear: 2014,
-  yearsOfExperience: 10,
+  establishedYear: 2024,
+  yearsOfExperience: (new Date().getFullYear() - 2024).toString(),
   parentCompany: "Luminix Clean Energy Holdings Group",
-  gstin: "29AABCL9876P1ZX",
+  gstin: "09ccvpv0642n1zm",
   mnreVendorId: "MNRE/RTS/2023/8842",
   isoCertifications: "ISO 9001:2015 & ISO 14001:2015 Certified",
-  phone: "+91 98765 43210",
-  phoneDisplay: "+91 98765 43210",
-  whatsapp: "+919876543210",
-  email: "contact@luminixsolar.com",
-  supportEmail: "support@luminixsolar.com",
-  address: "Luminix Clean Energy Tech Park, 4th Floor, Phase 2, Electronic City, Bengaluru, Karnataka 560100",
-  mapsUrl: "https://maps.google.com/?q=Electronic+City+Bengaluru",
+  phone: "+91 9793078997",
+  phoneDisplay: "+91 9793078997",
+  whatsapp: "+919793078997",
+  email: "luminixsolar2025@gmail.com",
+  supportEmail: "luminixsolar2025@gmail.com",
+  address: "MP - 2824, DASHAHARABAG MAKHDUMPUR ROAD, NEAR GOBIND INDUSTRIES I UNIT, NAWABGANJ BARABANKI, UTTAR PRADESH - 225001",
+  mapsUrl: "https://maps.google.com/",
   operatingHours: {
     weekdays: "Mon - Sat: 9:00 AM - 7:30 PM",
     sunday: "Sun: 10:00 AM - 4:00 PM (Emergency & Site Visits Available)",
@@ -79,14 +79,13 @@ export const COMPANY_INFO = {
     twitter: "https://x.com",
   },
 };
-
 export const COMPANY_STATS = [
-  { label: "Happy Customers", value: "4,850+", description: "Homes & businesses powered across South India" },
-  { label: "Solar Capacity Installed", value: "28.5+ MW", description: "Rooftop and ground-mounted solar plants" },
-  { label: "Consultations Completed", value: "12,500+", description: "Free 3D shadow analysis & feasibility audits" },
-  { label: "Years of Excellence", value: "10+ Years", description: "Established 2014 with 99.4% satisfaction" },
-  { label: "Customer Bill Savings", value: "₹18.2+ Cr", description: "Accumulated electricity bill reductions" },
-  { label: "CO2 Offset", value: "42,000+ Tonnes", description: "Equal to planting ~1.9 million mature trees" },
+  { label: "Happy Customers", value: "2000+", description: "Verified active clients" },
+  { label: "Installation Capacity", value: " Up to 2 MW", description: "clean energy scale" },
+  { label: "Consultations Completed", value: "5000+", description: "Completed energy audits" },
+  { label: "Years of Excellence", value: "2+ Years", description: "Proven track record" },
+  { label: "Customer Bill Savings", value: "Up to 90%", description: "Lower power costs" },
+  { label: "CO2 Offset", value: "2500+ Tonnes", description: "Green Impact ~41.3k trees" },
 ];
 
 export const AUTHORIZED_PARTNERS = [

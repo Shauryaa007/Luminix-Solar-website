@@ -41,67 +41,46 @@ export default function Home() {
         {/* Section 1: Hero Banner & Quick Form */}
         <HeroSection onOpenConsultation={handleOpenConsultation} />
 
+        {/* Section 6: Company Highlights & Key Numbers Counter */}
+        <StatsSection />
+
         {/* Section Coming Soon - temporary */}
         <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Sections below - Coming Soon....(develop)
+          Coming Soon....
         </h2>
-
-        {/* Section 6: Company Highlights & Key Numbers Counter */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Company Highlights & Key Numbers Counter
-        </h2>
-        {/* <StatsSection /> */}
 
         {/* Section 2: Products Showcase */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Products Showcase
-        </h2>
         {/* <ProductsSection onSelectProductForConsultation={handleOpenConsultation} /> */}
 
         {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Benefits & Interactive Solar Savings ROI Calculator
-        </h2>
         {/* <SolarCalculator onApplyForCapacity={handleOpenConsultation} /> */}
 
         {/* Section 4 Part 2: Benefits Breakdown & Comparison */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Benefits Breakdown & Comparison
-        </h2>
         {/* <BenefitsSection /> */}
 
         {/* Section 3: Customer Testimonials & Completed Installations Gallery */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Customer Testimonials & Completed Installations Gallery
-        </h2>
         {/* <TestimonialsSection /> */}
 
         {/* Section 5: About Company, GSTIN, Authorised Brands & 5-Step Process */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          About Company, GSTIN, Authorised Brands & 5-Step Process
-        </h2>
         {/* <AboutSection /> */}
 
         {/* Section 7: FAQs & Catalogue Downloads */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          FAQs & Catalogue Downloads
-        </h2>
         {/* <FaqSection /> */}
 
         {/* Section 1/5/7: Full Consultation & Contact Details */}
-        <ContactSection initialRequirement={modalPrefill} />
+        {/* <ContactSection initialRequirement={modalPrefill} /> */}
 
       </main>
 
       {/* Footer */}
-      <Footer />
+      {/* <Footer /> */}
 
       {/* Global Consultation Booking Modal */}
-      <ConsultationModal
+      {/* <ConsultationModal
         isOpen={isModalOpen}
         onClose={handleCloseConsultation}
         prefillNote={modalPrefill}
-      />
+      /> */}
 
       {/* Floating Action Buttons (WhatsApp, Phone, Scroll To Top) */}
       <FloatingActions />
