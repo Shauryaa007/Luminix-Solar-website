@@ -89,9 +89,9 @@ export const COMPANY_INFO = {
 };
 export const COMPANY_STATS = [
   { label: "Happy Customers", value: "2000+", description: "Verified active clients" },
-  { label: "Installation Capacity", value: " Up to 2 MW", description: "clean energy scale" },
+  { label: "Installation Capacity", value: "Up to 2 MW", description: "Clean energy scale" },
   { label: "Consultations Completed", value: "5000+", description: "Completed energy audits" },
-  { label: "Years of Excellence", value: "2+ Years", description: "Proven track record" },
+  { label: "Years of Excellence", value: "2+ yrs", description: "Proven track record" },
   { label: "Customer Bill Savings", value: "Up to 90%", description: "Lower power costs" },
   { label: "CO2 Offset", value: "2500+ Tonnes", description: "Green Impact ~41.3k trees" },
 ];

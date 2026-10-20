@@ -23,36 +23,38 @@ const icons = [
 
 export default function StatsSection() {
   return (
-    <section className="relative z-20 mx-auto -mt-6 max-w-7xl px-4 sm:-mt-8 sm:px-6 lg:px-8 bg-white">
-      <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-[0_12px_35px_-18px_rgba(16,60,42,0.22)]">
+    <section className="relative z-20 mx-auto -mt-4 sm:-mt-6 lg:-mt-8 max-w-7xl px-3.5 sm:px-6 lg:px-8">
+      <div className="overflow-hidden rounded-2xl border border-emerald-100/90 bg-slate-100/80 shadow-[0_12px_35px_-18px_rgba(16,60,42,0.18)]">
 
-        {/* Compact stats grid */}
-        <div className="grid grid-cols-2 divide-x divide-y divide-slate-100 sm:grid-cols-3 sm:divide-y-0 lg:grid-cols-6">
+        {/* Responsive stats grid: 2 cols on mobile, 3 cols on tablet, 6 cols on desktop */}
+        <div className="grid grid-cols-2 gap-px sm:grid-cols-3 lg:grid-cols-6">
           {COMPANY_STATS.map((stat, idx) => {
             const Icon = icons[idx] || SunMedium;
 
             return (
               <div
                 key={stat.label}
-                className="group flex min-w-0 items-center gap-3 px-3 py-4 transition-colors duration-200 hover:bg-emerald-50/60 sm:px-4 sm:py-5 lg:justify-center lg:px-3"
+                className="group flex flex-col justify-between bg-white p-3 sm:p-3.5 lg:p-3 xl:p-4 transition-colors duration-200 hover:bg-emerald-50/50"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800 transition-colors duration-200 group-hover:bg-emerald-800 group-hover:text-white">
-                  <Icon className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                </div>
+                <div>
+                  <div className="flex items-center justify-center">
+                    <span className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 transition-colors duration-200 group-hover:bg-emerald-800 group-hover:text-white">
+                      <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.8} />
+                    </span>
+                  </div>
 
-                <div className="min-w-0">
-                  <p className="truncate text-xl font-bold leading-tight tracking-tight text-slate-900 sm:text-2xl">
+                  <p className="mt-2 text-sm text-center xs:text-base sm:text-lg lg:text-base xl:text-lg font-bold tracking-tight text-slate-900 leading-none whitespace-nowrap">
                     {stat.value}
                   </p>
 
-                  <p className="mt-1 text-xs font-semibold leading-4 text-slate-600">
+                  <p className="mt-1.5 text-[11px] text-center sm:text-xs font-semibold leading-tight text-slate-700">
                     {stat.label}
                   </p>
-
-                  <p className="mt-0.5 line-clamp-1 text-[10px] leading-4 text-slate-400">
-                    {stat.description}
-                  </p>
                 </div>
+
+                <p className="mt-2 text-[10px] text-center leading-tight text-slate-400">
+                  {stat.description}
+                </p>
               </div>
             );
           })}
