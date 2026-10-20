@@ -5,7 +5,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Leaf,
-  ShieldCheck,
   Sun,
   Zap,
 } from 'lucide-react';
@@ -67,7 +66,7 @@ export default function HeroSection({
   };
 
   const inputClass =
-    'w-full rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10';
+    'w-full max-w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 sm:py-3 text-base sm:text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 box-border';
 
   const labelClass =
     'mb-1.5 block text-xs font-semibold text-slate-600';
@@ -75,12 +74,12 @@ export default function HeroSection({
   return (
     <section
       id="home"
-      className="overflow-hidden bg-white pb-12 pt-28 sm:pt-32 lg:pb-16 lg:pt-36"
+      className="overflow-hidden bg-white pb-12 pt-24 sm:pt-32 lg:pb-16 lg:pt-36"
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-7 lg:px-12">
+      <div className="mx-auto w-full max-w-[1600px] px-3.5 sm:px-7 lg:px-12">
 
         {/* Main hero visual */}
-        <div className="relative isolate overflow-hidden rounded-[28px] bg-[#102E24]">
+        <div className="relative isolate overflow-hidden rounded-2xl bg-[#102E24] sm:rounded-[28px]">
           {/* Multiple Background Images transitioning automatically one by one */}
           {HERO_BACKGROUND_IMAGES.map((imgSrc, idx) => {
             const isActive = currentBgIndex === idx;
@@ -107,16 +106,18 @@ export default function HeroSection({
             }}
           />
 
-          <div className="grid items-center gap-10 px-6 py-12 sm:px-10 sm:py-16 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-20 xl:px-16">
+          <div className="grid w-full min-w-0 grid-cols-1 items-center gap-8 px-4 py-8 sm:gap-10 sm:px-8 sm:py-16 lg:grid-cols-12 lg:gap-8 lg:px-14 lg:py-20 xl:px-16">
 
             {/* Hero copy */}
-            <div className="lg:col-span-7">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 text-xs font-medium text-white/90 backdrop-blur-sm sm:text-sm">
-                <Sun className="h-4 w-4 text-emerald-300" />
-                {COMPANY_INFO.tagline}
+            <div className="w-full min-w-0 lg:col-span-7">
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/90 backdrop-blur-sm sm:px-4 sm:py-2 sm:text-sm">
+                <Sun className="h-4 w-4 shrink-0 text-emerald-300" />
+                <span className="leading-snug break-words">
+                  {COMPANY_INFO.tagline}
+                </span>
               </div>
 
-              <h1 className="mt-7 max-w-2xl text-4xl font-medium leading-[1.12] tracking-[-0.035em] text-white sm:text-5xl lg:text-6xl xl:text-7xl">
+              <h1 className="mt-5 max-w-2xl text-3xl font-medium leading-[1.15] tracking-[-0.035em] text-white sm:mt-7 sm:text-5xl lg:text-6xl xl:text-7xl">
                 The Future of
                 <br />
                 <span className="font-semibold text-emerald-300">
@@ -124,35 +125,35 @@ export default function HeroSection({
                 </span>
               </h1>
 
-              <p className="mt-6 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-xl text-sm leading-6 text-white/75 sm:mt-6 sm:text-lg sm:leading-8">
                 Power your home with solar. Save more with every sunny day.
               </p>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
                 <a
                   href="#calculator"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-[#153D2D] transition hover:bg-emerald-50"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-semibold text-[#153D2D] transition hover:bg-emerald-50 active:scale-[0.99] sm:w-auto"
                 >
-                  Calculate Your Savings
-                  <ArrowRight className="h-4 w-4" />
+                  <span>Calculate Your Savings</span>
+                  <ArrowRight className="h-4 w-4 shrink-0" />
                 </a>
 
                 <button
                   type="button"
                   onClick={() => onOpenConsultation()}
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg border border-white/30 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10"
+                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-white/30 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/10 active:scale-[0.99] sm:w-auto"
                 >
                   Talk to an Expert
                 </button>
               </div>
 
               {/* Trust indicators */}
-              <div className="mt-10 flex flex-wrap gap-x-7 gap-y-4 border-t border-white/20 pt-6">
+              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3.5 border-t border-white/20 pt-5 sm:mt-10 sm:gap-x-7 sm:gap-y-4 sm:pt-6">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
                     <Leaf className="h-4 w-4 text-emerald-300" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">
                       Clean energy
                     </p>
@@ -163,10 +164,10 @@ export default function HeroSection({
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10">
                     <Zap className="h-4 w-4 text-emerald-300" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-semibold text-white">
                       Lower grid reliance
                     </p>
@@ -179,19 +180,19 @@ export default function HeroSection({
             </div>
 
             {/* Consultation card */}
-            <div className="lg:col-span-5">
-              <div className="relative rounded-2xl border border-white/60 bg-white p-5 shadow-2xl shadow-black/20 sm:p-7 lg:p-8">
+            <div className="w-full min-w-0 lg:col-span-5">
+              <div className="relative w-full max-w-full rounded-2xl border border-white/60 bg-white p-4 shadow-2xl shadow-black/20 sm:p-6 lg:p-8">
                 {/* Free consultation pill label */}
-                <div className="absolute top-0 right-6 -translate-y-1/2 z-10 rounded-full bg-amber-500 px-4 py-1 text-xs font-bold text-slate-950 shadow-md sm:right-8 sm:text-sm">
+                <div className="absolute top-0 right-4 sm:right-8 -translate-y-1/2 z-10 whitespace-nowrap rounded-full bg-amber-500 px-3.5 py-1 text-xs font-bold text-slate-950 shadow-md sm:px-4 sm:text-sm">
                   Free consultation
                 </div>
 
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-800">
                       Let&apos;s get started
                     </p>
-                    <h2 className="mt-2 text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-3xl">
+                    <h2 className="mt-1.5 text-xl font-semibold leading-tight tracking-tight text-slate-900 sm:mt-2 sm:text-2xl lg:text-3xl">
                       Your solar plan starts here.
                     </h2>
                   </div>
@@ -225,7 +226,7 @@ export default function HeroSection({
                 ) : (
                   <form
                     onSubmit={handleSubmit}
-                    className="space-y-4"
+                    className="mt-5 space-y-4"
                   >
                     <div>
                       <label htmlFor="hero-name" className={labelClass}>
@@ -248,8 +249,8 @@ export default function HeroSection({
                       <label htmlFor="hero-phone" className={labelClass}>
                         Mobile number *
                       </label>
-                      <div className="flex overflow-hidden rounded-lg border border-slate-200 focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-700/10">
-                        <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">
+                      <div className="flex w-full min-w-0 overflow-hidden rounded-lg border border-slate-200 focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-700/10">
+                        <span className="flex shrink-0 items-center border-r border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">
                           +91
                         </span>
                         <input
@@ -268,7 +269,7 @@ export default function HeroSection({
                               e.target.value.replace(/\D/g, '').slice(0, 10)
                             )
                           }
-                          className="min-w-0 flex-1 bg-white px-3 py-3 text-sm outline-none"
+                          className="min-w-0 flex-1 bg-white px-3 py-2.5 sm:py-3 text-base sm:text-sm outline-none"
                         />
                       </div>
                     </div>
@@ -299,7 +300,7 @@ export default function HeroSection({
                         onChange={(e) =>
                           updateField('monthlyBill', e.target.value)
                         }
-                        className={inputClass}
+                        className={`${inputClass} truncate`}
                       >
                         <option value="Under ₹2,000">Under ₹2,000</option>
                         <option value="₹2,000 - ₹5,000">
@@ -325,7 +326,7 @@ export default function HeroSection({
                         onChange={(e) =>
                           updateField('propertyType', e.target.value)
                         }
-                        className={inputClass}
+                        className={`${inputClass} truncate`}
                       >
                         <option value="Residential Independent House / Villa">
                           Independent house / Villa
@@ -348,13 +349,15 @@ export default function HeroSection({
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 disabled:opacity-60"
+                      className="flex min-h-12 w-full max-w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 active:scale-[0.99] disabled:opacity-60"
                     >
-                      {isSubmitting
-                        ? 'Submitting...'
-                        : 'Get My Solar Consultation'}
+                      <span className="truncate">
+                        {isSubmitting
+                          ? 'Submitting...'
+                          : 'Get My Solar Consultation'}
+                      </span>
                       {!isSubmitting && (
-                        <ArrowRight className="h-4 w-4" />
+                        <ArrowRight className="h-4 w-4 shrink-0" />
                       )}
                     </button>
 
@@ -365,7 +368,7 @@ export default function HeroSection({
           </div>
 
           {/* Minimal slide indicator dots */}
-          <div className="absolute bottom-4 left-6 sm:left-10 z-10 flex items-center gap-1.5">
+          <div className="absolute bottom-3 left-4 z-10 flex items-center gap-1.5 sm:bottom-4 sm:left-10">
             {HERO_BACKGROUND_IMAGES.map((_, i) => (
               <button
                 key={i}
