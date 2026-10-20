@@ -236,9 +236,9 @@ export default function Navbar({
                       className="group flex min-h-11 items-center justify-between rounded-xl px-3.5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800"
                     >
                       <span className="flex items-center gap-3">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 text-[10px] font-bold text-slate-400 transition group-hover:bg-white group-hover:text-emerald-700">
+                        {/* <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 text-[10px] font-bold text-slate-400 transition group-hover:bg-white group-hover:text-emerald-700">
                           {String(index + 1).padStart(2, '0')}
-                        </span>
+                        </span> */}
                         {link.name}
                       </span>
                       <ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-700" />
