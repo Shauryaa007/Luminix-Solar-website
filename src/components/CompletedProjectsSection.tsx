@@ -9,6 +9,8 @@ import {
   ArrowUpRight,
   X,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import {
   COMPLETED_PROJECTS,
@@ -146,6 +148,69 @@ export default function CompletedProjectsSection() {
     };
   }, [selectedGalleryProject]);
 
+  // Desktop & tablet scroll carousel controls
+  const desktopScrollRef = useRef<HTMLDivElement>(null);
+  const [desktopActiveIndex, setDesktopActiveIndex] = useState(0);
+
+  const updateDesktopScroll = useCallback(() => {
+    if (!desktopScrollRef.current) return;
+    const container = desktopScrollRef.current;
+    const card = container.firstElementChild as HTMLElement | null;
+    if (!card) return;
+    const cardWidth = card.offsetWidth + 20;
+    const index = Math.round(container.scrollLeft / cardWidth);
+    setDesktopActiveIndex(Math.min(Math.max(index, 0), totalSlides - 1));
+  }, [totalSlides]);
+
+  useEffect(() => {
+    const container = desktopScrollRef.current;
+    if (!container) return;
+    updateDesktopScroll();
+    container.addEventListener('scroll', updateDesktopScroll, { passive: true });
+    window.addEventListener('resize', updateDesktopScroll);
+    return () => {
+      container.removeEventListener('scroll', updateDesktopScroll);
+      window.removeEventListener('resize', updateDesktopScroll);
+    };
+  }, [updateDesktopScroll]);
+
+  const scrollToProjectIndex = (index: number) => {
+    if (!desktopScrollRef.current) return;
+    const container = desktopScrollRef.current;
+    const card = container.firstElementChild as HTMLElement | null;
+    if (!card) return;
+    const cardWidth = card.offsetWidth + 20;
+    container.scrollTo({ left: index * cardWidth, behavior: 'smooth' });
+  };
+
+  const scrollNext = () => {
+    if (!desktopScrollRef.current) return;
+    const container = desktopScrollRef.current;
+    const card = container.firstElementChild as HTMLElement | null;
+    if (!card) return;
+    const cardWidth = card.offsetWidth + 20;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    if (scrollLeft + clientWidth >= scrollWidth - 15) {
+      container.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      container.scrollBy({ left: cardWidth, behavior: 'smooth' });
+    }
+  };
+
+  const scrollPrev = () => {
+    if (!desktopScrollRef.current) return;
+    const container = desktopScrollRef.current;
+    const card = container.firstElementChild as HTMLElement | null;
+    if (!card) return;
+    const cardWidth = card.offsetWidth + 20;
+    const { scrollLeft, scrollWidth } = container;
+    if (scrollLeft <= 15) {
+      container.scrollTo({ left: scrollWidth, behavior: 'smooth' });
+    } else {
+      container.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    }
+  };
+
   return (
     <section
       id="projects"
@@ -171,71 +236,115 @@ export default function CompletedProjectsSection() {
             </p>
           </div>
 
-          <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-600">
-            <Zap className="h-4 w-4 text-emerald-700" />
-            Residential & commercial
+          <div className="flex items-center gap-3">
+            <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-600">
+              <Zap className="h-4 w-4 text-emerald-700" />
+              Residential & commercial
+            </div>
+
+            {/* Desktop / Tablet navigation arrows */}
+            <div className="hidden sm:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={scrollPrev}
+                aria-label="Previous projects"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={scrollNext}
+                aria-label="Next projects"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Desktop grid — hidden on mobile */}
-        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {COMPLETED_PROJECTS.map((project) => (
-            <button
-              key={project.id}
-              type="button"
-              onClick={() => setSelectedGalleryProject(project)}
-              aria-label={`View details for ${project.title}`}
-              className="group relative block w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-200"
-            >
-              <div className="relative h-72 overflow-hidden sm:h-80 lg:h-[350px]">
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  fill
-                  className="object-cover transition duration-700 group-hover:scale-105"
-                  sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
-                />
+        {/* Desktop & Tablet multi-card carousel — hidden on mobile */}
+        <div className="hidden sm:block">
+          <div
+            ref={desktopScrollRef}
+            className="flex gap-5 overflow-x-auto pb-4 pt-1 scroll-smooth snap-x snap-mandatory [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {COMPLETED_PROJECTS.map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                onClick={() => setSelectedGalleryProject(project)}
+                aria-label={`View details for ${project.title}`}
+                className="group relative block w-[calc(50%-10px)] lg:w-[calc(33.333%-13.333px)] shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-200"
+              >
+                <div className="relative h-72 overflow-hidden sm:h-80 lg:h-[350px]">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className="object-cover transition duration-700 group-hover:scale-105"
+                    sizes="(max-width: 1023px) 50vw, 33vw"
+                  />
 
-                {/* Image overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#082c20] via-[#082c20]/30 to-black/20 transition duration-300 group-hover:from-[#082c20]/95" />
+                  {/* Image overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#082c20] via-[#082c20]/30 to-black/20 transition duration-300 group-hover:from-[#082c20]/95" />
 
-                {/* Capacity badge */}
-                <div className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-[#103c2c]/90 px-2.5 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm">
-                  <Zap className="h-3.5 w-3.5 text-emerald-200" />
-                  {project.capacity}
-                </div>
+                  {/* Capacity badge */}
+                  <div className="absolute left-3.5 top-3.5 inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-[#103c2c]/90 px-2.5 py-1.5 text-xs font-bold text-white shadow-lg backdrop-blur-sm">
+                    <Zap className="h-3.5 w-3.5 text-emerald-200" />
+                    {project.capacity}
+                  </div>
 
-                {/* Category badge */}
-                <div className="absolute right-3.5 top-3.5 rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-                  {project.category}
-                </div>
+                  {/* Category badge */}
+                  <div className="absolute right-3.5 top-3.5 rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
+                    {project.category}
+                  </div>
 
-                {/* Bottom details */}
-                <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-300">
-                    Installed for
-                  </p>
-                  <h3 className="mt-0.5 text-base font-bold leading-snug text-white sm:text-lg">
-                    {project.customerName}
-                  </h3>
+                  {/* Bottom details */}
+                  <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-emerald-300">
+                      Installed for
+                    </p>
+                    <h3 className="mt-0.5 text-base font-bold leading-snug text-white sm:text-lg">
+                      {project.customerName}
+                    </h3>
 
-                  <p className="mt-1.5 flex items-center gap-1.5 text-xs text-white/75">
-                    <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
-                    <span className="truncate">{project.location}</span>
-                  </p>
+                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-white/75">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+                      <span className="truncate">{project.location}</span>
+                    </p>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-white/20 pt-3">
-                    <span className="text-xs font-semibold text-white/90">
-                      Explore project
-                    </span>
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-emerald-900 transition duration-300 group-hover:rotate-45">
-                      <ArrowUpRight className="h-4 w-4" />
-                    </span>
+                    <div className="mt-4 flex items-center justify-between border-t border-white/20 pt-3">
+                      <span className="text-xs font-semibold text-white/90">
+                        Explore project
+                      </span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-emerald-900 transition duration-300 group-hover:rotate-45">
+                        <ArrowUpRight className="h-4 w-4" />
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop/Tablet indicator dots */}
+          <div className="mt-6 flex justify-center gap-2">
+            {COMPLETED_PROJECTS.map((project, idx) => (
+              <button
+                key={project.id}
+                type="button"
+                onClick={() => scrollToProjectIndex(idx)}
+                aria-label={`Go to project ${idx + 1}`}
+                className={`h-2.5 rounded-full transition-all duration-300 ${
+                  desktopActiveIndex === idx
+                    ? 'w-8 bg-emerald-600'
+                    : 'w-2.5 bg-slate-300 hover:bg-slate-400'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Mobile carousel — visible only on small screens */}
