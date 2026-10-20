@@ -1,3 +1,9 @@
+import { StaticImageData } from 'next/image';
+import img1 from './completed-project/img1.jpg';
+import img2 from './completed-project/img2.jpg';
+import img3 from './completed-project/img3.jpg';
+import img4 from './completed-project/img4.jpg';
+
 export interface Product {
   id: string;
   name: string;
@@ -37,7 +43,7 @@ export interface CompletedProject {
   location: string;
   capacity: string;
   annualGeneration: string;
-  image: string;
+  image: StaticImageData;
   completionYear: string;
   summary: string;
 }
@@ -313,7 +319,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     location: "Electronic City, Bengaluru",
     capacity: "8 kW Bifacial N-Type System",
     annualGeneration: "11,800 kWh / Year",
-    image: "/images/residential-solar-roof.jpg",
+    image: img1,
     completionYear: "2025",
     summary: "Elevated customized pergola structure providing usable shaded terrace recreational space alongside 92% electricity generation.",
   },
@@ -324,7 +330,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     location: "Bommasandra Industrial Area",
     capacity: "120 kW Industrial Array",
     annualGeneration: "1,75,000 kWh / Year",
-    image: "/images/commercial-solar.jpg",
+    image: img2,
     completionYear: "2024",
     summary: "Non-penetrative sheet clamping system with automated IoT generation monitoring and DG-synchronization module.",
   },
@@ -335,7 +341,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     location: "Whitefield, Bengaluru",
     capacity: "65 kW Distributed Rooftop",
     annualGeneration: "96,000 kWh / Year",
-    image: "/images/hero-solar.jpg",
+    image: img3,
     completionYear: "2025",
     summary: "Multi-building distributed solar network powering computer labs, smart classrooms, and solar street illumination.",
   },
@@ -346,7 +352,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     location: "Coorg Estate Resort",
     capacity: "15 kW Hybrid + 20 kWh Storage",
     annualGeneration: "21,500 kWh / Year",
-    image: "/images/hybrid-inverter-system.jpg",
+    image: img4,
     completionYear: "2025",
     summary: "Off-grid capable hybrid solution ensuring continuous silent luxury experience without noisy diesel generators.",
   }

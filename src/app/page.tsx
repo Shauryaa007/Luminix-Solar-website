@@ -44,22 +44,19 @@ export default function Home() {
         {/* Section 6: Company Highlights & Key Numbers Counter */}
         <StatsSection />
 
+        {/* Section 3: Customer Testimonials & Completed Installations Gallery */}
+        <TestimonialsSection />
+
         {/* Section Coming Soon - temporary */}
         <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
           Coming Soon....
         </h2>
-
-        {/* Section 2: Products Showcase */}
-        {/* <ProductsSection onSelectProductForConsultation={handleOpenConsultation} /> */}
 
         {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
         {/* <SolarCalculator onApplyForCapacity={handleOpenConsultation} /> */}
 
         {/* Section 4 Part 2: Benefits Breakdown & Comparison */}
         {/* <BenefitsSection /> */}
-
-        {/* Section 3: Customer Testimonials & Completed Installations Gallery */}
-        {/* <TestimonialsSection /> */}
 
         {/* Section 5: About Company, GSTIN, Authorised Brands & 5-Step Process */}
         {/* <AboutSection /> */}

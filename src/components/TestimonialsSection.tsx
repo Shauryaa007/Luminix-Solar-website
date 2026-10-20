@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Star,
@@ -26,6 +26,73 @@ import {
 export default function TestimonialsSection() {
   const [selectedGalleryProject, setSelectedGalleryProject] =
     useState<CompletedProject | null>(null);
+
+  // --- Mobile carousel state ---
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const touchStartX = useRef(0);
+  const touchDeltaX = useRef(0);
+  const autoSlideTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const totalSlides = COMPLETED_PROJECTS.length;
+  const pauseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      setActiveSlide((index + totalSlides) % totalSlides);
+    },
+    [totalSlides]
+  );
+
+  // Auto-slide every 2 seconds on mobile
+  useEffect(() => {
+    if (isPaused) return;
+
+    autoSlideTimer.current = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % totalSlides);
+    }, 2000);
+
+    return () => {
+      if (autoSlideTimer.current) clearInterval(autoSlideTimer.current);
+    };
+  }, [isPaused, totalSlides]);
+
+  // Pause auto-slide temporarily on user interaction
+  const pauseAutoSlide = useCallback(() => {
+    setIsPaused(true);
+    if (pauseTimeout.current) clearTimeout(pauseTimeout.current);
+    pauseTimeout.current = setTimeout(() => setIsPaused(false), 5000);
+  }, []);
+
+  // Touch handlers for swipe
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchDeltaX.current = 0;
+      pauseAutoSlide();
+    },
+    [pauseAutoSlide]
+  );
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchDeltaX.current = e.touches[0].clientX - touchStartX.current;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const threshold = 50;
+    if (touchDeltaX.current < -threshold) {
+      goToSlide(activeSlide + 1);
+    } else if (touchDeltaX.current > threshold) {
+      goToSlide(activeSlide - 1);
+    }
+    touchDeltaX.current = 0;
+  }, [activeSlide, goToSlide]);
+
+  // Cleanup pause timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (pauseTimeout.current) clearTimeout(pauseTimeout.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!selectedGalleryProject) return;
@@ -212,7 +279,8 @@ export default function TestimonialsSection() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Desktop grid — hidden on mobile */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {COMPLETED_PROJECTS.map((project) => (
               <button
                 key={project.id}
@@ -270,6 +338,99 @@ export default function TestimonialsSection() {
                 </div>
               </button>
             ))}
+          </div>
+
+          {/* Mobile carousel — visible only on small screens */}
+          <div className="sm:hidden">
+            <div
+              className="relative overflow-hidden rounded-2xl"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div
+                className="flex transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(-${activeSlide * 100}%)` }}
+              >
+                {COMPLETED_PROJECTS.map((project) => (
+                  <button
+                    key={project.id}
+                    type="button"
+                    onClick={() => setSelectedGalleryProject(project)}
+                    aria-label={`View details for ${project.title}`}
+                    className="group relative block w-full shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-200"
+                  >
+                    <div className="relative h-80 overflow-hidden">
+                      <Image
+                        src={project.image}
+                        alt={project.title}
+                        fill
+                        className="object-cover"
+                        sizes="100vw"
+                      />
+
+                      {/* Image overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#082c20] via-[#082c20]/20 to-black/10" />
+
+                      {/* Capacity badge */}
+                      <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-[#103c2c]/90 px-3 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-sm">
+                        <Zap className="h-3.5 w-3.5 text-emerald-200" />
+                        {project.capacity}
+                      </div>
+
+                      <div className="absolute right-4 top-4 rounded-lg border border-white/20 bg-black/30 px-2.5 py-1.5 text-xs font-semibold text-white backdrop-blur-md">
+                        {project.completionYear}
+                      </div>
+
+                      {/* Bottom details */}
+                      <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-200">
+                          {project.clientType}
+                        </p>
+
+                        <h4 className="text-lg font-bold leading-snug">
+                          {project.title}
+                        </h4>
+
+                        <p className="mt-2 flex items-center gap-1.5 text-xs text-white/75">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{project.location}</span>
+                        </p>
+
+                        <div className="mt-5 flex items-center justify-between border-t border-white/20 pt-4">
+                          <span className="text-xs font-semibold text-white/90">
+                            Explore project
+                          </span>
+                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-emerald-900">
+                            <ArrowUpRight className="h-4 w-4" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dot indicators */}
+            <div className="mt-4 flex items-center justify-center gap-2">
+              {COMPLETED_PROJECTS.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    goToSlide(index);
+                    pauseAutoSlide();
+                  }}
+                  aria-label={`Go to slide ${index + 1}`}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    index === activeSlide
+                      ? 'w-7 bg-emerald-700'
+                      : 'w-2.5 bg-slate-300 hover:bg-slate-400'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
 
