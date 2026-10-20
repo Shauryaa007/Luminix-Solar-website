@@ -3,6 +3,7 @@ import img1 from './completed-project/img1.jpg';
 import img2 from './completed-project/img2.jpg';
 import img3 from './completed-project/img3.jpg';
 import img4 from './completed-project/img4.jpg';
+import img5 from './completed-project/img5.jpg';
 
 export interface Product {
   id: string;
@@ -39,13 +40,14 @@ export interface Testimonial {
 export interface CompletedProject {
   id: string;
   title: string;
-  clientType: 'Residential Villa' | 'Commercial Factory' | 'Educational Campus' | 'Hospitality';
+  customerName: string;
+  category: 'Residential' | 'Commercial';
   location: string;
   capacity: string;
-  annualGeneration: string;
+  annualGeneration?: string;
+  description: string;
+  installationDate: string;
   image: StaticImageData;
-  completionYear: string;
-  summary: string;
 }
 
 export interface FaqItem {
@@ -314,47 +316,63 @@ export const TESTIMONIALS_DATA: Testimonial[] = [
 export const COMPLETED_PROJECTS: CompletedProject[] = [
   {
     id: "proj-1",
-    title: "Luxury Modern Villa Rooftop System",
-    clientType: "Residential Villa",
-    location: "Electronic City, Bengaluru",
-    capacity: "8 kW Bifacial N-Type System",
+    title: "Rooftop Solar Installation",
+    customerName: "Sunil Kumar Srivastav",
+    category: "Residential",
+    location: "janshwara, Uttar Pradesh",
+    capacity: "5 kW On-Grid System",
     annualGeneration: "11,800 kWh / Year",
     image: img1,
-    completionYear: "2025",
-    summary: "Elevated customized pergola structure providing usable shaded terrace recreational space alongside 92% electricity generation.",
+    installationDate: "October 2026",
+    description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
   },
   {
     id: "proj-2",
-    title: "Precision Manufacturing Plant Solar EPC",
-    clientType: "Commercial Factory",
-    location: "Bommasandra Industrial Area",
-    capacity: "120 kW Industrial Array",
-    annualGeneration: "1,75,000 kWh / Year",
+    title: "Rooftop Solar Installation",
+    customerName: "Renu Shukla",
+    category: "Residential",
+    location: "Barabanki, Uttar Pradesh",
+    capacity: "5 kW On-Grid System",
+    annualGeneration: "11,800 kWh / Year",
     image: img2,
-    completionYear: "2024",
-    summary: "Non-penetrative sheet clamping system with automated IoT generation monitoring and DG-synchronization module.",
+    installationDate: "June 2026",
+    description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
   },
   {
     id: "proj-3",
-    title: "Eco-Tech Innovation Campus",
-    clientType: "Educational Campus",
-    location: "Whitefield, Bengaluru",
-    capacity: "65 kW Distributed Rooftop",
-    annualGeneration: "96,000 kWh / Year",
+    title: "Rooftop Solar Installation",
+    customerName: "Usha Tiwari",
+    category: "Residential",
+    location: "Lucknow, Uttar Pradesh",
+    capacity: "5 kW On-Grid System",
+    annualGeneration: "11,800 kWh / Year",
     image: img3,
-    completionYear: "2025",
-    summary: "Multi-building distributed solar network powering computer labs, smart classrooms, and solar street illumination.",
+    installationDate: "July 2026",
+    description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
   },
   {
     id: "proj-4",
-    title: "Reliable Hybrid Solar & Battery Facility",
-    clientType: "Hospitality",
-    location: "Coorg Estate Resort",
-    capacity: "15 kW Hybrid + 20 kWh Storage",
-    annualGeneration: "21,500 kWh / Year",
+    title: "Rooftop Solar Installation",
+    customerName: "Rukhsana",
+    category: "Residential",
+    location: "Barabanki, Uttar Pradesh",
+    capacity: "3 kW On-Grid System",
+    annualGeneration: "11,800 kWh / Year",
     image: img4,
-    completionYear: "2025",
-    summary: "Off-grid capable hybrid solution ensuring continuous silent luxury experience without noisy diesel generators.",
+    installationDate: "July 2026",
+    description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
+  },
+  {
+    id: "proj-5",
+    title: "Rooftop Solar Installation",
+    customerName: "Raj Rani Tandon",
+    category: "Residential",
+    location: "Satrikh, Uttar Pradesh",
+    capacity: "5 kW On-Grid System",
+    annualGeneration: "11,800 kWh / Year",
+    image: img5,
+    installationDate: "April 2026",
+    description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
   }
 ];
 
