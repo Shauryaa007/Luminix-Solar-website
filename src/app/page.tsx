@@ -48,6 +48,9 @@ export default function Home() {
         {/* Section: Completed Installations Gallery */}
         <CompletedProjectsSection />
 
+        {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
+        <SolarCalculator onApplyForCapacity={handleOpenConsultation} />
+
         {/* Section Coming Soon - temporary */}
         <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
           Coming Soon....
@@ -55,9 +58,6 @@ export default function Home() {
 
         {/* Section 3: Customer Testimonials */}
         {/* <TestimonialsSection /> */}
-
-        {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
-        {/* <SolarCalculator onApplyForCapacity={handleOpenConsultation} /> */}
 
         {/* Section 4 Part 2: Benefits Breakdown & Comparison */}
         {/* <BenefitsSection /> */}
