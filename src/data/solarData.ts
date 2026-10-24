@@ -4,6 +4,7 @@ import img2 from './completed-project/img2.jpg';
 import img3 from './completed-project/img3.jpg';
 import img4 from './completed-project/img4.jpg';
 import img5 from './completed-project/img5.jpg';
+import img6 from './completed-project/img6.jpg';
 
 export interface Product {
   id: string;
@@ -320,8 +321,8 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     customerName: "Sunil Kumar Srivastav",
     category: "Residential",
     location: "janshwara, Uttar Pradesh",
-    capacity: "5 kW On-Grid System",
-    annualGeneration: "11,800 kWh / Year",
+    capacity: "3 kW On-Grid System",
+    annualGeneration: "5,940 kWh / Year",
     image: img1,
     installationDate: "October 2026",
     description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
@@ -332,8 +333,8 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     customerName: "Renu Shukla",
     category: "Residential",
     location: "Barabanki, Uttar Pradesh",
-    capacity: "5 kW On-Grid System",
-    annualGeneration: "11,800 kWh / Year",
+    capacity: "3 kW On-Grid System",
+    annualGeneration: "5,940 kWh / Year",
     image: img2,
     installationDate: "June 2026",
     description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
@@ -344,8 +345,8 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     customerName: "Usha Tiwari",
     category: "Residential",
     location: "Lucknow, Uttar Pradesh",
-    capacity: "5 kW On-Grid System",
-    annualGeneration: "11,800 kWh / Year",
+    capacity: "3 kW On-Grid System",
+    annualGeneration: "5,940 kWh / Year",
     image: img3,
     installationDate: "July 2026",
     description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
@@ -357,7 +358,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     category: "Residential",
     location: "Barabanki, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
-    annualGeneration: "11,800 kWh / Year",
+    annualGeneration: "5,940 kWh / Year",
     image: img4,
     installationDate: "July 2026",
     description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
@@ -368,10 +369,22 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     customerName: "Raj Rani Tandon",
     category: "Residential",
     location: "Satrikh, Uttar Pradesh",
-    capacity: "5 kW On-Grid System",
-    annualGeneration: "11,800 kWh / Year",
+    capacity: "3 kW On-Grid System",
+    annualGeneration: "5,940 kWh / Year",
     image: img5,
     installationDate: "April 2026",
+    description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
+  },
+  {
+    id: "proj-6",
+    title: "Rooftop Solar Installation",
+    customerName: "Jamal Fatima",
+    category: "Residential",
+    location: "Lucknow, Uttar Pradesh",
+    capacity: "5 kW On-Grid System",
+    annualGeneration: "9,900 kWh / Year",
+    image: img6,
+    installationDate: "July 2026",
     description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
   }
 ];
