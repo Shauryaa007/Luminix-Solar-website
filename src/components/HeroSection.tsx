@@ -168,7 +168,7 @@ export default function HeroSection({
               </h1>
 
               <p className="mt-4 max-w-xl text-sm leading-6 text-white/75 sm:mt-6 sm:text-lg sm:leading-8">
-                Power your home with solar. Save more with every sunny day.
+                Leading rooftop solar solutions across Lucknow & Barabanki. Save up to 90% on electricity bills with PM Surya Ghar subsidy.
               </p>
 
               <div className="mt-6 flex w-full flex-col gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center">
