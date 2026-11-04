@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "googleapis": "^189.0.0",
     "lucide-react": "^1.57.0",
     "next": "16.4.0",
     "react": "19.3.0",

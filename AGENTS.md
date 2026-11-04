@@ -7,3 +7,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Project Rules
+- **Responsive Design System**: Refer to [.agents/rules/responsive-design-rules.md](file:///Users/shaurya007/Documents/Luminix-Solar-website/.agents/rules/responsive-design-rules.md) for all responsive dimensions, spacing, typography, touch target, and layout standards derived from the top sections of the website. Whenever modifying responsive behavior, ask the user whether to update this rule file.

@@ -23,7 +23,7 @@ const icons = [
 
 export default function StatsSection() {
   return (
-    <section className="relative z-20 mx-auto -mt-4 sm:-mt-6 lg:-mt-8 max-w-7xl px-3.5 sm:px-6 lg:px-8">
+    <section className="relative z-20 mx-auto -mt-4 sm:-mt-6 lg:-mt-8 max-w-7xl px-3.5 sm:px-6 lg:px-8 mb-20">
       <div className="overflow-hidden rounded-2xl border border-emerald-100/90 bg-slate-100/80 shadow-[0_12px_35px_-18px_rgba(16,60,42,0.18)]">
 
         {/* Responsive stats grid: 2 cols on mobile, 3 cols on tablet, 6 cols on desktop */}

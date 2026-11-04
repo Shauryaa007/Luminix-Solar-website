@@ -1,317 +1,471 @@
-
 'use client';
 
-import React from 'react';
-import {
-  TrendingDown,
-  ShieldCheck,
-  ArrowLeftRight,
-  Award,
-  BatteryMedium,
-  Wrench,
-  CheckCircle2,
-  CircleMinus,
-  Sparkles,
-  Zap,
-  ArrowUpRight,
-  Sun,
-  Leaf,
-  BadgeCheck,
-} from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ArrowRight, ChevronRight, Sun } from 'lucide-react';
+
+type Card = {
+  id: string;
+  tag: string;
+  title: string;
+  text: string;
+  chips: string[];
+  img: string;
+  featured?: boolean;
+};
+
+const AUTOPLAY_MS = 4500; // same speed as the hero slider
+
+const CARDS: Card[] = [
+  {
+    id: 'bill',
+    tag: 'Save money',
+    title: 'Pay less for electricity',
+    text: 'Your rooftop makes power from sunlight, so you buy less from the electricity company. Every 1 kW gives about 5 to 6 units a day.',
+    chips: ['Lower monthly bill', '5–6 units a day per kW', 'Works every sunny day'],
+    img: '/images/residential-solar-roof.jpg',
+  },
+  {
+    id: 'subsidy',
+    tag: 'Government help',
+    title: 'Get subsidy on your plant',
+    text: 'We guide you through the PM Surya Ghar subsidy and handle the paperwork for you.',
+    chips: ['Up to ₹1,08,000 subsidy', 'We do the paperwork', 'Central + State support'],
+    img: '/images/hero-solar.jpg',
+    featured: true,
+  },
+  {
+    id: 'backup',
+    tag: 'Backup',
+    title: 'Light during power cuts',
+    text: 'Add a hybrid inverter and battery to keep lights, fans and other important things running.',
+    chips: ['Hybrid inverter', 'Battery backup', 'Keeps key appliances on'],
+    img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85',
+  },
+  {
+    id: 'property',
+    tag: 'Homes & business',
+    title: 'Solar for every property',
+    text: 'Houses, apartments, shops, offices, factories and farms. Choose a plant that fits your roof and your bill.',
+    chips: ['Homes & apartments', 'Shops & factories', 'Farms & water pumps'],
+    img: '/images/commercial-solar.jpg',
+  },
+  {
+    id: 'support',
+    tag: 'We handle it',
+    title: 'Easy from start to finish',
+    text: 'We handle the site visit, approvals and installation. Quality panels come with company warranty.',
+    chips: ['Free site visit', 'Approvals done by us', 'Warranty-backed panels'],
+    img: '/images/installation-team.jpg',
+  },
+];
+
+const STEPS = [
+  { title: 'Free site visit', text: 'Our engineer checks your roof and your light bill.' },
+  { title: 'We install it', text: 'Panels, approvals and subsidy paperwork are done by us.' },
+  { title: 'Start saving', text: 'You make your own power and pay less every month.' },
+];
+
+function Dots({
+  count,
+  index,
+  onSelect,
+  tone,
+}: {
+  count: number;
+  index: number;
+  onSelect: (i: number) => void;
+  tone: 'light' | 'dark';
+}) {
+  return (
+    <div className="flex items-center justify-center gap-1.5">
+      {Array.from({ length: count }).map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => onSelect(i)}
+          aria-label={`Go to slide ${i + 1}`}
+          aria-current={index === i}
+          className={`h-1.5 rounded-full transition-all duration-500 ${
+            index === i
+              ? tone === 'light'
+                ? 'w-7 bg-white'
+                : 'w-7 bg-emerald-800'
+              : tone === 'light'
+              ? 'w-1.5 bg-white/50 hover:bg-white/70'
+              : 'w-1.5 bg-emerald-800/25 hover:bg-emerald-800/45'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Tag({ card }: { card: Card }) {
+  return (
+    <span
+      className={`w-fit rounded-full px-3.5 py-1.5 text-xs font-bold sm:text-sm ${
+        card.featured ? 'bg-amber-500 text-slate-950' : 'bg-white/90 text-emerald-900'
+      }`}
+    >
+      {card.tag}
+    </span>
+  );
+}
 
 export default function BenefitsSection() {
-  const benefits = [
-    {
-      icon: TrendingDown,
-      number: '01',
-      title: 'Lower electricity bills',
-      description:
-        'Generate your own electricity from sunlight and reduce your dependence on grid power.',
-      highlight: 'Long-term savings potential',
-    },
-    {
-      icon: ShieldCheck,
-      number: '02',
-      title: 'Government subsidy support',
-      description:
-        'Explore applicable rooftop solar subsidies and get guidance through the documentation process.',
-      highlight: 'Guidance on PM Surya Ghar',
-    },
-    {
-      icon: ArrowLeftRight,
-      number: '03',
-      title: 'Smarter energy management',
-      description:
-        'With an approved net-metering setup, eligible surplus generation may offset electricity drawn from the grid.',
-      highlight: 'Make surplus power count',
-    },
-    {
-      icon: Award,
-      number: '04',
-      title: 'Built for the long run',
-      description:
-        'Choose quality solar modules with manufacturer-backed product and performance warranties.',
-      highlight: 'Warranty-backed components',
-    },
-    {
-      icon: BatteryMedium,
-      number: '05',
-      title: 'Backup when you need it',
-      description:
-        'Pair a compatible hybrid inverter with battery storage to power selected appliances during outages.',
-      highlight: 'Optional battery integration',
-    },
-    {
-      icon: Wrench,
-      number: '06',
-      title: 'A simpler installation journey',
-      description:
-        'Get support with system selection, site assessment, installation coordination and applicable approvals.',
-      highlight: 'Support from start to finish',
-    },
-  ];
+  const total = CARDS.length;
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const dragStartX = useRef<number | null>(null);
 
-  const comparison = [
-    {
-      feature: 'Electricity expenses',
-      traditional: 'Continued dependence on grid tariffs',
-      solar: 'Potential to reduce purchased electricity',
+  const goTo = useCallback(
+    (i: number) => setIndex(((i % total) + total) % total),
+    [total]
+  );
+
+  // Respect "reduce motion" setting
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduceMotion(mq.matches);
+    const onChange = () => setReduceMotion(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  // Auto change slide, restarts after every change (swipe, tab or dot)
+  useEffect(() => {
+    if (paused || reduceMotion) return;
+    const t = setTimeout(() => setIndex((i) => (i + 1) % total), AUTOPLAY_MS);
+    return () => clearTimeout(t);
+  }, [index, paused, reduceMotion, total]);
+
+  // Swipe (touch) and drag (mouse) — used by the mobile carousel
+  const startDrag = (x: number) => {
+    dragStartX.current = x;
+    setPaused(true);
+  };
+  const endDrag = (x: number) => {
+    const start = dragStartX.current;
+    dragStartX.current = null;
+    setPaused(false);
+    if (start === null) return;
+    const dx = x - start;
+    if (Math.abs(dx) > 40) goTo(index + (dx < 0 ? 1 : -1));
+  };
+  const cancelDrag = () => {
+    dragStartX.current = null;
+    setPaused(false);
+  };
+
+  const trackHandlers = {
+    onTouchStart: (e: React.TouchEvent) => startDrag(e.touches[0].clientX),
+    onTouchEnd: (e: React.TouchEvent) => endDrag(e.changedTouches[0].clientX),
+    onTouchCancel: cancelDrag,
+    onMouseDown: (e: React.MouseEvent) => startDrag(e.clientX),
+    onMouseUp: (e: React.MouseEvent) => endDrag(e.clientX),
+    onMouseLeave: () => {
+      if (dragStartX.current !== null) cancelDrag();
     },
-    {
-      feature: 'Energy generation',
-      traditional: 'Power supplied through the utility grid',
-      solar: 'Generate electricity on your own rooftop',
-    },
-    {
-      feature: 'Government support',
-      traditional: 'No rooftop solar installation',
-      solar: 'Eligible systems may qualify for applicable subsidies',
-    },
-    {
-      feature: 'Power outages',
-      traditional: 'Grid supply alone stops during outages',
-      solar: 'Compatible battery backup can power selected loads',
-    },
-    {
-      feature: 'Long-term planning',
-      traditional: 'Ongoing exposure to electricity tariffs',
-      solar: 'Greater control over a portion of energy costs',
-    },
-    {
-      feature: 'Environmental impact',
-      traditional: 'Grid electricity has a location-dependent emissions profile',
-      solar: 'Rooftop solar can reduce reliance on grid generation',
-    },
-  ];
+  };
 
   return (
     <section
       id="benefits"
-      className="relative overflow-hidden bg-white py-20 sm:py-24 lg:py-28"
+      className="overflow-hidden bg-[#F5F8F3] py-10 sm:py-14 lg:py-20"
     >
-      {/* Subtle brand background */}
-      <div className="pointer-events-none absolute -top-32 right-0 h-80 w-80 rounded-full bg-emerald-50 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-40 -left-40 h-80 w-80 rounded-full bg-teal-50/80 blur-3xl" />
-
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section heading */}
-        <div className="mx-auto mb-14 max-w-3xl text-center sm:mb-16">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-800">
-            <Sparkles className="h-4 w-4" />
-            The LuminixSolar advantage
+      <div className="mx-auto w-full max-w-[1600px] px-3.5 sm:px-7 lg:px-12">
+        {/* ================= Mobile & tablet (unchanged) ================= */}
+        <div className="lg:hidden">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-medium text-emerald-900 sm:text-sm">
+            <Sun className="h-4 w-4 shrink-0 text-emerald-700" />
+            Benefits of solar
           </div>
-
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-            More control over your
-            <span className="block text-emerald-700">
-              energy. More room to grow.
-            </span>
+          <h2 className="mt-4 text-4xl font-medium leading-[1.1] tracking-[-0.04em] text-[#102E24] sm:text-5xl">
+            Why choose
+            <br />
+            <span className="font-semibold text-emerald-700">solar panels?</span>
           </h2>
-
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-            Solar is more than installing panels. It is a practical step
-            toward smarter energy use, predictable planning and a cleaner
-            energy future.
+          <p className="mt-3 max-w-xl text-base leading-7 text-slate-600">
+            Save money, get subsidy and stay powered. Swipe to see what solar
+            gives you.
           </p>
-        </div>
 
-        {/* Benefit cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {benefits.map((benefit) => {
-            const Icon = benefit.icon;
-
-            return (
-              <article
-                key={benefit.number}
-                className="group relative flex min-h-[280px] flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_18px_45px_-22px_rgba(6,78,59,0.22)] sm:p-7"
-              >
-                {/* Top row */}
-                <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 transition duration-300 group-hover:bg-emerald-700 group-hover:text-white">
-                    <Icon className="h-5 w-5" strokeWidth={1.8} />
-                  </div>
-
-                  <span className="text-xs font-bold tracking-[0.16em] text-slate-300">
-                    {benefit.number}
-                  </span>
-                </div>
-
-                {/* Card content */}
-                <h3 className="mt-6 text-lg font-bold tracking-tight text-slate-950 sm:text-xl">
-                  {benefit.title}
-                </h3>
-
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  {benefit.description}
-                </p>
-
-                {/* Bottom highlight */}
-                <div className="mt-auto pt-6">
-                  <div className="flex items-center gap-2 border-t border-slate-100 pt-4">
-                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
-                    <span className="text-xs font-semibold text-emerald-800">
-                      {benefit.highlight}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Decorative hover accent */}
-                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-emerald-700 transition-all duration-300 group-hover:w-full" />
-              </article>
-            );
-          })}
-        </div>
-
-        {/* Comparison section */}
-        <div className="mt-20 sm:mt-24">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-2xl">
-              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">
-                <ArrowLeftRight className="h-4 w-4" />
-                At a glance
-              </div>
-
-              <h3 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                Grid electricity vs. rooftop solar
-              </h3>
-
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                See how generating your own power can change the way you
-                manage household or business energy.
-              </p>
-            </div>
-
-            <div className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
-              <Sun className="h-4 w-4 text-emerald-700" />
-              A smarter energy choice
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_16px_45px_-30px_rgba(15,23,42,0.25)]">
-            {/* Table header */}
-            <div className="grid grid-cols-2 border-b border-slate-200 sm:grid-cols-[1fr_1fr_1fr]">
-              <div className="col-span-2 bg-slate-50 px-5 py-4 sm:col-span-1 sm:px-6 sm:py-5">
-                <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
-                  Compare your options
-                </span>
-              </div>
-
-              <div className="hidden items-center bg-slate-50 px-6 py-5 sm:flex">
-                <span className="text-sm font-semibold text-slate-600">
-                  Traditional grid
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 bg-emerald-800 px-4 py-4 text-white sm:px-6 sm:py-5">
-                <Sun className="h-4 w-4 shrink-0 text-emerald-200" />
-                <span className="text-sm font-bold">
-                  LuminixSolar
-                </span>
-              </div>
-            </div>
-
-            {/* Comparison rows */}
-            {comparison.map((item, index) => (
+          <div
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Benefits of solar"
+            className="mt-5"
+          >
+            <div
+              className="touch-pan-y select-none overflow-hidden rounded-2xl shadow-xl shadow-emerald-950/15"
+              {...trackHandlers}
+            >
               <div
-                key={item.feature}
-                className={`grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr] ${
-                  index !== comparison.length - 1
-                    ? 'border-b border-slate-100'
-                    : ''
-                }`}
+                className="flex transition-transform duration-700 ease-out motion-reduce:transition-none"
+                style={{ transform: `translateX(-${index * 100}%)` }}
               >
-                <div className="col-span-2 px-5 pb-2 pt-5 sm:col-span-1 sm:px-6 sm:py-5">
-                  <span className="text-sm font-bold text-slate-900">
-                    {item.feature}
-                  </span>
-                </div>
-
-                <div className="px-5 pb-5 pt-2 sm:px-6 sm:py-5">
-                  <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:hidden">
-                    Grid
+                {CARDS.map((card, i) => (
+                  <div
+                    key={card.id}
+                    aria-hidden={i !== index}
+                    className="relative isolate h-[30rem] w-full shrink-0 bg-[#102E24] text-white sm:h-[34rem]"
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 -z-20 bg-cover bg-center"
+                      style={{ backgroundImage: `url('${card.img}')` }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 -z-10"
+                      style={{
+                        background:
+                          'linear-gradient(to top, rgba(10,40,29,0.97) 0%, rgba(10,40,29,0.75) 40%, rgba(10,40,29,0.05) 75%)',
+                      }}
+                    />
+                    <div className="flex h-full flex-col justify-between p-5 sm:p-8">
+                      <Tag card={card} />
+                      <div>
+                        <h3 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+                          {card.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-6 text-white/80 sm:max-w-lg sm:text-base">
+                          {card.text}
+                        </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {card.chips.map((chip, ci) => (
+                            <span
+                              key={chip}
+                              className={`rounded-full border px-2.5 py-1 text-xs font-medium backdrop-blur-sm ${
+                                card.featured && ci === 0
+                                  ? 'border-amber-400 bg-amber-500 font-bold text-slate-950'
+                                  : 'border-white/25 bg-white/15 text-white'
+                              }`}
+                            >
+                              {chip}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="flex items-start gap-2">
-                    <CircleMinus className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                    <span className="text-xs leading-5 text-slate-600 sm:text-sm">
-                      {item.traditional}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="border-l border-emerald-100 bg-emerald-50/60 px-4 pb-5 pt-2 sm:border-l-0 sm:px-6 sm:py-5">
-                  <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-emerald-800 sm:hidden">
-                    Solar
-                  </div>
-
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                    <span className="text-xs font-medium leading-5 text-slate-800 sm:text-sm">
-                      {item.solar}
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="mt-4">
+              <Dots count={total} index={index} onSelect={goTo} tone="dark" />
+            </div>
           </div>
 
-          <p className="mt-4 text-xs leading-5 text-slate-500">
-            Actual savings, subsidy eligibility, backup capability and
-            installation outcomes depend on your location, electricity
-            connection, system design and applicable regulations.
-          </p>
-        </div>
-
-        {/* Closing CTA banner */}
-        <div className="relative mt-16 overflow-hidden rounded-3xl bg-[#103c2c] px-6 py-9 sm:px-10 sm:py-10 lg:mt-20 lg:px-12">
-          <div className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 rounded-full border border-white/10" />
-          <div className="pointer-events-none absolute -right-1 -top-16 h-48 w-48 rounded-full border border-white/10" />
-
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-xl">
-              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-emerald-200">
-                <Leaf className="h-4 w-4" />
-                Your solar journey starts here
-              </div>
-
-              <h3 className="text-2xl font-bold leading-tight text-white sm:text-3xl">
-                Ready to explore solar for your property?
-              </h3>
-
-              <p className="mt-3 text-sm leading-6 text-emerald-100/80">
-                Get a tailored recommendation based on your electricity
-                usage, available roof space and energy requirements.
-              </p>
-            </div>
+          {/* How it works */}
+          <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-emerald-950/5">
+            <h3 className="text-lg font-semibold text-slate-900">How it works</h3>
+            <ol className="mt-4 space-y-4">
+              {STEPS.map((step, i) => (
+                <li key={step.title} className="flex items-start gap-3.5">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-sm font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">{step.title}</p>
+                    <p className="mt-0.5 text-sm leading-5 text-slate-600">{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
 
             <a
               href="#calculator"
-              className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-white/20"
+              className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 active:scale-[0.99]"
             >
               Calculate my savings
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <ArrowRight className="h-4 w-4 shrink-0" />
+            </a>
+            <a
+              href="#home"
+              className="mt-1 flex min-h-11 w-full items-center justify-center text-sm font-semibold text-emerald-800"
+            >
+              Get free consultation
             </a>
           </div>
+
+          <p className="mt-3 px-1 text-[11px] leading-4 text-slate-500">
+            Savings and subsidy depend on your location, electricity connection
+            and government rules.
+          </p>
+        </div>
+
+        {/* ================= Desktop (redesigned) ================= */}
+        <div
+          className="mx-auto hidden max-w-6xl lg:block"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <div className="grid grid-cols-12 items-center gap-10 xl:gap-14">
+            {/* ---- Left: heading + benefit list ---- */}
+            <div className="col-span-5">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-900">
+                <Sun className="h-4 w-4 shrink-0 text-emerald-700" />
+                Benefits of solar
+              </div>
+
+              <h2 className="mt-5 text-5xl font-medium leading-[1.08] tracking-[-0.04em] text-[#102E24] xl:text-6xl">
+                Why choose
+                <br />
+                <span className="font-semibold text-emerald-700">solar panels?</span>
+              </h2>
+
+              <p className="mt-4 max-w-md text-lg leading-8 text-slate-600">
+                Save money, get subsidy and stay powered.
+              </p>
+
+              <div role="tablist" aria-label="Benefits of solar" className="mt-7 space-y-2">
+                {CARDS.map((card, i) => {
+                  const active = i === index;
+                  return (
+                    <button
+                      key={card.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => goTo(i)}
+                      className={`flex w-full items-center justify-between gap-4 rounded-xl border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 ${
+                        active
+                          ? 'border-emerald-800 bg-white shadow-lg shadow-emerald-950/10'
+                          : 'border-transparent hover:bg-white/70'
+                      }`}
+                    >
+                      <span className="min-w-0">
+                        <span
+                          className={`block text-xs font-medium ${
+                            active ? 'text-emerald-700' : 'text-slate-500'
+                          }`}
+                        >
+                          {card.tag}
+                        </span>
+                        <span
+                          className={`mt-0.5 block text-base font-semibold ${
+                            active ? 'text-slate-900' : 'text-slate-700'
+                          }`}
+                        >
+                          {card.title}
+                        </span>
+                      </span>
+                      <ChevronRight
+                        className={`h-5 w-5 shrink-0 transition ${
+                          active ? 'text-emerald-800' : 'text-slate-300'
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ---- Right: big image card, fades between benefits ---- */}
+            <div
+              role="region"
+              aria-roledescription="carousel"
+              aria-label="Benefits of solar"
+              className="col-span-7"
+            >
+              <div className="relative isolate h-[34rem] overflow-hidden rounded-[28px] bg-[#102E24] shadow-2xl shadow-emerald-950/20 xl:h-[38rem]">
+                {CARDS.map((card, i) => (
+                  <div
+                    key={card.id}
+                    aria-hidden={i !== index}
+                    className={`absolute inset-0 text-white transition-opacity duration-700 motion-reduce:transition-none ${
+                      i === index ? 'opacity-100' : 'pointer-events-none opacity-0'
+                    }`}
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url('${card.img}')` }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          'linear-gradient(to top, rgba(10,40,29,0.97) 0%, rgba(10,40,29,0.7) 40%, rgba(10,40,29,0.05) 75%)',
+                      }}
+                    />
+
+                    <div className="absolute left-8 top-8">
+                      <Tag card={card} />
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 p-8 xl:p-10">
+                      <h3 className="text-4xl font-semibold leading-[1.1] tracking-[-0.03em] xl:text-5xl">
+                        {card.title}
+                      </h3>
+                      <p className="mt-3 max-w-xl text-lg leading-8 text-white/80">
+                        {card.text}
+                      </p>
+                      <ul className="mt-5 flex flex-wrap gap-2">
+                        {card.chips.map((chip, ci) => (
+                          <li
+                            key={chip}
+                            className={`rounded-full border px-3.5 py-1.5 text-sm font-medium backdrop-blur-sm ${
+                              card.featured && ci === 0
+                                ? 'border-amber-400 bg-amber-500 font-bold text-slate-950'
+                                : 'border-white/25 bg-white/15 text-white'
+                            }`}
+                          >
+                            {chip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ---- How it works + CTA ---- */}
+          <div className="mt-8 flex items-center gap-8 rounded-[28px] border border-slate-200 bg-white p-6 shadow-xl shadow-emerald-950/5 xl:p-8">
+            <div className="grid flex-1 grid-cols-3 divide-x divide-slate-200">
+              {STEPS.map((step, i) => (
+                <div
+                  key={step.title}
+                  className={`flex items-start gap-4 ${i === 0 ? 'pr-6' : 'px-6'}`}
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-800 text-base font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-base font-semibold text-slate-900">{step.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{step.text}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="shrink-0 border-l border-slate-200 pl-8">
+              <a
+                href="#calculator"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-emerald-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 active:scale-[0.99]"
+              >
+                Calculate my savings
+                <ArrowRight className="h-4 w-4 shrink-0" />
+              </a>
+              <a
+                href="#home"
+                className="mt-1 block text-center text-sm font-semibold text-emerald-800 hover:underline"
+              >
+                Get free consultation
+              </a>
+            </div>
+          </div>
+
+          <p className="mt-4 px-1 text-xs text-slate-500">
+            Savings and subsidy depend on your location, electricity connection
+            and government rules.
+          </p>
         </div>
       </div>
     </section>

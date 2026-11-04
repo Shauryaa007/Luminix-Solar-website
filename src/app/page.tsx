@@ -48,33 +48,35 @@ export default function Home() {
         {/* Section: Completed Installations Gallery */}
         <CompletedProjectsSection />
 
-        {/* Section Coming Soon - temporary */}
-        <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
-          Coming Soon....
-        </h2>
+        {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
+        <SolarCalculator onApplyForCapacity={handleOpenConsultation} />
 
         {/* Section 3: Customer Testimonials */}
         {/* <TestimonialsSection /> */}
 
-        {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
-        {/* <SolarCalculator onApplyForCapacity={handleOpenConsultation} /> */}
-
         {/* Section 4 Part 2: Benefits Breakdown & Comparison */}
-        {/* <BenefitsSection /> */}
+        <BenefitsSection />
 
         {/* Section 5: About Company, GSTIN, Authorised Brands & 5-Step Process */}
-        {/* <AboutSection /> */}
+        <AboutSection />
+
+
 
         {/* Section 7: FAQs & Catalogue Downloads */}
         {/* <FaqSection /> */}
 
         {/* Section 1/5/7: Full Consultation & Contact Details */}
-        {/* <ContactSection initialRequirement={modalPrefill} /> */}
+        <ContactSection />
+
+        <Footer />
+        {/* Section Coming Soon - temporary */}
+        {/* <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
+          Coming Soon....
+        </h2> */}
 
       </main>
 
       {/* Footer */}
-      {/* <Footer /> */}
 
       {/* Global Consultation Booking Modal */}
       {/* <ConsultationModal
