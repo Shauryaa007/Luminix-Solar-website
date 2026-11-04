@@ -1,720 +1,143 @@
-
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import {
-  Phone,
-  Mail,
-  MapPin,
-  Clock,
-  MessageCircle,
-  Send,
-  CheckCircle2,
-  ShieldCheck,
-  ExternalLink,
-  CalendarDays,
-  ArrowUpRight,
-  Sun,
-  Zap,
-  Building2,
-  Home,
-  Factory,
-  Sprout,
-  ChevronDown,
-  UserRound,
-  IndianRupee,
-} from 'lucide-react';
-import { COMPANY_INFO } from '@/data/solarData';
+import React from 'react';
+import { MapPin, MessageCircle, Navigation, Phone, Sun } from 'lucide-react';
 
-interface ContactSectionProps {
-  initialRequirement?: string;
-}
+/* -------------------------------------------------------------------------- */
+/*  Details taken from the company flyer                                      */
+/* -------------------------------------------------------------------------- */
 
-const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10';
+// Number used for the big "Call" and "WhatsApp" buttons (10 digits, no +91)
+const PRIMARY_PHONE = '9793078997';
 
-const labelClass =
-  'mb-2 block text-sm font-semibold text-slate-700';
+type Office = {
+  name: string;
+  address?: string;
+  phones: string[];
+};
 
-const propertyOptions = [
+const OFFICES: Office[] = [
   {
-    value: 'Residential Villa / Independent House',
-    label: 'Independent house',
-    icon: Home,
+    name: 'Head office, Barabanki',
+    address: 'MP-2824, Dashrabagh, Makhdumpur Road, Barabanki (225001)',
+    phones: ['8127554008'],
   },
   {
-    value: 'Apartment Society / Gated Community',
-    label: 'Apartment / Society',
-    icon: Building2,
+    name: 'Bijnaur office, Lucknow',
+    address: 'Subhash Hotel, Mati, Bijnaur Road, Lucknow (226002)',
+    phones: ['9793078997', '8127554008'],
   },
   {
-    value: 'Commercial Complex / Hospital / Hotel',
-    label: 'Commercial property',
-    icon: Building2,
+    name: 'Alamnagar branch',
+    phones: ['9793078997'],
   },
   {
-    value: 'Industrial Factory / Warehouse',
-    label: 'Industrial / Warehouse',
-    icon: Factory,
-  },
-  {
-    value: 'Agricultural Farmland / Solar Water Pump',
-    label: 'Agricultural / Farm',
-    icon: Sprout,
+    name: 'Indira Nagar branch',
+    phones: ['7355464235'],
   },
 ];
 
-export default function ContactSection({
-  initialRequirement,
-}: ContactSectionProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    city: '',
-    pincode: '',
-    monthlyBill: '₹3,000 - ₹6,000 / month',
-    propertyType: 'Residential Villa / Independent House',
-    requirement: initialRequirement || '',
-    preferredDate: '',
-  });
+const formatPhone = (digits: string) => `${digits.slice(0, 5)} ${digits.slice(5)}`;
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [minDate, setMinDate] = useState<string>('');
+const mapsLink = (address: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
-  useEffect(() => {
-    setMinDate(new Date().toLocaleDateString('en-CA'));
-  }, []);
-
-  const updateField = (
-    field: keyof typeof formData,
-    value: string
-  ) => {
-    setFormData((previous) => ({
-      ...previous,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
-      alert('Please enter a valid 10-digit Indian mobile number.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // Connect your enquiry API here before treating the request as submitted.
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setIsSuccess(true);
-    }, 800);
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      mobile: '',
-      email: '',
-      city: '',
-      pincode: '',
-      monthlyBill: '₹3,000 - ₹6,000 / month',
-      propertyType: 'Residential Villa / Independent House',
-      requirement: initialRequirement || '',
-      preferredDate: '',
-    });
-    setIsSuccess(false);
-  };
-
-  const contactItems = [
-    {
-      icon: Phone,
-      label: 'Call our team',
-      value: COMPANY_INFO.phoneDisplay,
-      note: 'Speak with our solar team',
-      href: `tel:${COMPANY_INFO.phone}`,
-      external: false,
-    },
-    {
-      icon: MessageCircle,
-      label: 'WhatsApp support',
-      value: 'Chat with us',
-      note: 'Ask questions and request a quote',
-      href: `https://wa.me/${COMPANY_INFO.whatsapp}?text=${encodeURIComponent(
-        'Hello Luminix Solar, I would like to know more about rooftop solar.'
-      )}`,
-      external: true,
-    },
-    {
-      icon: Mail,
-      label: 'Email enquiries',
-      value: COMPANY_INFO.email,
-      note: COMPANY_INFO.supportEmail,
-      href: `mailto:${COMPANY_INFO.email}`,
-      external: false,
-    },
-  ];
+export default function ContactSection() {
+  const whatsappUrl = `https://wa.me/91${PRIMARY_PHONE}?text=${encodeURIComponent(
+    'Hi, I want to know about rooftop solar.'
+  )}`;
 
   return (
-    <section
-      id="contact"
-      className="relative overflow-hidden bg-[#f5f8f5] py-16 text-slate-900 sm:py-20 lg:py-24"
-    >
-      {/* Subtle brand accents */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-emerald-200/20 blur-3xl"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-40 bottom-0 h-96 w-96 rounded-full bg-green-100/40 blur-3xl"
-      />
+    <section id="contact" className="overflow-hidden bg-[#F5F8F3] py-10 sm:py-14 lg:py-20">
+      <div className="mx-auto w-full max-w-[1600px] px-3.5 sm:px-7 lg:px-12">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-2 lg:items-center lg:gap-16">
+          {/* ---------- Left: heading + actions ---------- */}
+          <div>
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-medium text-emerald-900 sm:px-4 sm:py-2 sm:text-sm">
+              <Sun className="h-4 w-4 shrink-0 text-emerald-700" />
+              Contact
+            </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800 shadow-sm">
-            <Sun className="h-4 w-4" />
-            Let&apos;s talk solar
+            <h2 className="mt-4 text-4xl font-medium leading-[1.1] tracking-[-0.04em] text-[#102E24] sm:text-5xl xl:text-6xl">
+              Call, chat
+              <br />
+              <span className="font-semibold text-emerald-700">or visit us</span>
+            </h2>
+
+            <p className="mt-3 max-w-md text-base leading-7 text-slate-600 sm:mt-4 sm:text-lg sm:leading-8">
+              Talk to our team about your roof, your bill or the subsidy. Free site visit and
+              free consultation.
+            </p>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <a
+                href={`tel:+91${PRIMARY_PHONE}`}
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 active:scale-[0.99] sm:w-auto"
+              >
+                <Phone className="h-4 w-4 shrink-0" />
+                Call {formatPhone(PRIMARY_PHONE)}
+              </a>
+
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99] sm:w-auto"
+              >
+                <MessageCircle className="h-4 w-4 shrink-0 text-emerald-700" />
+                WhatsApp us
+              </a>
+            </div>
           </div>
 
-          <h2 className="text-3xl font-bold leading-tight tracking-tight text-slate-950 sm:text-4xl lg:text-5xl">
-            Your solar journey
-            <span className="mt-1 block text-emerald-700">
-              starts right here.
-            </span>
-          </h2>
+          {/* ---------- Right: offices ---------- */}
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-emerald-950/5 sm:p-6">
+            <p className="text-sm font-semibold text-slate-900">Our offices</p>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-            Tell us about your property and electricity usage. Our team can
-            help you explore suitable solar solutions and arrange a site
-            assessment.
-          </p>
+            <ul className="mt-3 divide-y divide-slate-200">
+              {OFFICES.map((office) => (
+                <li key={office.name} className="flex items-start gap-3.5 py-3.5 last:pb-0">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-800">
+                    <MapPin className="h-4 w-4" />
+                  </span>
 
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm font-medium text-slate-600">
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-              Personalised guidance
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-              Tailored quotation
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-700" />
-              No-obligation enquiry
-            </span>
-          </div>
-        </div>
-
-        <div className="grid items-start gap-7 lg:grid-cols-12 lg:gap-8">
-          {/* Contact information */}
-          <aside className="space-y-5 lg:col-span-5">
-            <div className="relative overflow-hidden rounded-3xl bg-[#123d2b] p-6 text-white shadow-xl shadow-emerald-950/10 sm:p-8">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full border border-white/10"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-5 -top-5 h-36 w-36 rounded-full border border-white/10"
-              />
-
-              <div className="relative">
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/15">
-                  <Sun className="h-6 w-6 text-emerald-300" />
-                </div>
-
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-300">
-                  LuminixSolar
-                </p>
-
-                <h3 className="mt-2 text-2xl font-bold leading-snug sm:text-3xl">
-                  Good energy begins with a conversation.
-                </h3>
-
-                <p className="mt-3 max-w-sm text-sm leading-6 text-emerald-50/75">
-                  Reach out to discuss your rooftop, energy requirements,
-                  solar products or project plans.
-                </p>
-
-                <div className="mt-7 space-y-5">
-                  {contactItems.map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <div key={item.label} className="flex items-start gap-4">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10 text-emerald-200 ring-1 ring-white/10">
-                          <Icon className="h-5 w-5" />
-                        </div>
-
-                        <div className="min-w-0 flex-1 pt-0.5">
-                          <p className="text-xs font-medium text-emerald-100/65">
-                            {item.label}
-                          </p>
-
-                          <a
-                            href={item.href}
-                            target={item.external ? '_blank' : undefined}
-                            rel={
-                              item.external
-                                ? 'noopener noreferrer'
-                                : undefined
-                            }
-                            className="mt-1 inline-flex max-w-full items-center gap-1.5 break-words text-sm font-semibold text-white transition hover:text-emerald-200 sm:text-base"
-                          >
-                            <span>{item.value}</span>
-                            {item.external && (
-                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
-                            )}
-                          </a>
-
-                          <p className="mt-1 break-words text-xs leading-5 text-emerald-100/60">
-                            {item.note}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-7 border-t border-white/15 pt-6">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white">
-                        Visit our office
-                      </p>
-                      <p className="mt-1 text-sm leading-6 text-emerald-50/70">
-                        {COMPANY_INFO.address}
-                      </p>
-                      <a
-                        href={COMPANY_INFO.mapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-emerald-300 transition hover:text-white"
-                      >
-                        Get directions
-                        <ArrowUpRight className="h-4 w-4" />
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Business hours */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
-                  <Clock className="h-5 w-5" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <h4 className="font-bold text-slate-900">
-                    Business hours
-                  </h4>
-                  <p className="mt-2 text-sm leading-6 text-slate-700">
-                    {COMPANY_INFO.operatingHours.weekdays}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    {COMPANY_INFO.operatingHours.sunday}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Company details */}
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6">
-              <div className="mb-4 flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-emerald-700" />
-                <h4 className="font-bold text-slate-900">
-                  Company details
-                </h4>
-              </div>
-
-              <dl className="space-y-3 text-sm">
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
-                  <dt className="text-slate-500">Registered name</dt>
-                  <dd className="break-words font-semibold text-slate-800 sm:max-w-[60%] sm:text-right">
-                    {COMPANY_INFO.name}
-                  </dd>
-                </div>
-
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
-                  <dt className="text-slate-500">GSTIN</dt>
-                  <dd className="break-all font-mono text-xs font-semibold text-slate-800 sm:text-right">
-                    {COMPANY_INFO.gstin}
-                  </dd>
-                </div>
-
-                <div className="flex flex-col gap-1 sm:flex-row sm:justify-between sm:gap-4">
-                  <dt className="text-slate-500">MNRE vendor ID</dt>
-                  <dd className="break-words font-mono text-xs font-semibold text-emerald-800 sm:text-right">
-                    {COMPANY_INFO.mnreVendorId}
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </aside>
-
-          {/* Consultation form */}
-          <div className="lg:col-span-7">
-            <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl shadow-slate-900/[0.04]">
-              <div className="border-b border-slate-100 px-6 py-6 sm:px-9 sm:py-8">
-                <div className="flex items-start gap-4">
-                  <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 sm:flex">
-                    <CalendarDays className="h-6 w-6" />
-                  </div>
-
-                  <div>
-                    <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-800">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                      Solar consultation
-                    </div>
-
-                    <h3 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-                      Let&apos;s plan your solar project.
-                    </h3>
-
-                    <p className="mt-2 text-sm leading-6 text-slate-500">
-                      Share a few details so we can understand your
-                      requirements.
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 sm:text-base">
+                      {office.name}
                     </p>
-                  </div>
-                </div>
-              </div>
 
-              {isSuccess ? (
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className="px-6 py-16 text-center sm:px-10"
-                >
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                    <CheckCircle2 className="h-9 w-9" />
-                  </div>
+                    {office.address && (
+                      <p className="mt-0.5 text-sm leading-5 text-slate-600">{office.address}</p>
+                    )}
 
-                  <h4 className="mt-6 text-2xl font-bold text-slate-950">
-                    Thank you, {formData.name}!
-                  </h4>
-
-                  <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-600">
-                    Your details have been captured in this session. Once
-                    the enquiry form is connected to your backend, your team
-                    can receive and follow up on this request.
-                  </p>
-
-                  <div className="mx-auto mt-6 max-w-sm rounded-2xl bg-emerald-50 p-4 text-left">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800">
-                      Your enquiry
-                    </p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">
-                      {formData.propertyType}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Monthly bill: {formData.monthlyBill}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Location: {formData.city}, {formData.pincode}
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="mt-7 inline-flex items-center justify-center rounded-xl bg-[#123d2b] px-6 py-3 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-700/20"
-                  >
-                    Submit another enquiry
-                  </button>
-                </div>
-              ) : (
-                <form
-                  onSubmit={handleSubmit}
-                  className="space-y-7 px-6 py-7 sm:px-9 sm:py-9"
-                >
-                  {/* Personal information */}
-                  <div>
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
-                        <UserRound className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">
-                          Your details
-                        </h4>
-                        <p className="text-xs text-slate-500">
-                          How can we get in touch?
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="contact-name" className={labelClass}>
-                          Full name <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          id="contact-name"
-                          type="text"
-                          autoComplete="name"
-                          required
-                          maxLength={100}
-                          placeholder="Enter your full name"
-                          value={formData.name}
-                          onChange={(e) => updateField('name', e.target.value)}
-                          className={inputClass}
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="contact-mobile" className={labelClass}>
-                          Mobile number <span className="text-rose-500">*</span>
-                        </label>
-                        <div className="flex overflow-hidden rounded-xl border border-slate-200 transition focus-within:border-emerald-600 focus-within:ring-4 focus-within:ring-emerald-600/10">
-                          <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-600">
-                            +91
-                          </span>
-                          <input
-                            id="contact-mobile"
-                            type="tel"
-                            autoComplete="tel-national"
-                            inputMode="numeric"
-                            required
-                            pattern="[6-9][0-9]{9}"
-                            maxLength={10}
-                            title="Enter a valid 10-digit Indian mobile number"
-                            placeholder="9876543210"
-                            value={formData.mobile}
-                            onChange={(e) =>
-                              updateField(
-                                'mobile',
-                                e.target.value.replace(/\D/g, '').slice(0, 10)
-                              )
-                            }
-                            className="min-w-0 flex-1 px-3 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="contact-email" className={labelClass}>
-                          Email address
-                        </label>
-                        <input
-                          id="contact-email"
-                          type="email"
-                          autoComplete="email"
-                          maxLength={254}
-                          placeholder="you@example.com"
-                          value={formData.email}
-                          onChange={(e) => updateField('email', e.target.value)}
-                          className={inputClass}
-                        />
-                      </div>
-
-                      <div>
-                        <label htmlFor="contact-city" className={labelClass}>
-                          City <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          id="contact-city"
-                          type="text"
-                          autoComplete="address-level2"
-                          required
-                          maxLength={100}
-                          placeholder="Your city"
-                          value={formData.city}
-                          onChange={(e) => updateField('city', e.target.value)}
-                          className={inputClass}
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label htmlFor="contact-pincode" className={labelClass}>
-                          Pincode <span className="text-rose-500">*</span>
-                        </label>
-                        <input
-                          id="contact-pincode"
-                          type="text"
-                          inputMode="numeric"
-                          autoComplete="postal-code"
-                          required
-                          pattern="[0-9]{6}"
-                          maxLength={6}
-                          placeholder="6-digit pincode"
-                          value={formData.pincode}
-                          onChange={(e) =>
-                            updateField(
-                              'pincode',
-                              e.target.value.replace(/\D/g, '').slice(0, 6)
-                            )
-                          }
-                          className={inputClass}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-slate-100" />
-
-                  {/* Property information */}
-                  <div>
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800">
-                        <Zap className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">
-                          Your solar requirements
-                        </h4>
-                        <p className="text-xs text-slate-500">
-                          Help us understand your energy needs.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <label htmlFor="contact-bill" className={labelClass}>
-                          Monthly electricity bill
-                        </label>
-                        <div className="relative">
-                          <IndianRupee className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <select
-                            id="contact-bill"
-                            value={formData.monthlyBill}
-                            onChange={(e) =>
-                              updateField('monthlyBill', e.target.value)
-                            }
-                            className={`${inputClass} appearance-none pl-9 pr-9`}
-                          >
-                            <option value="Under ₹2,000 / month">
-                              Under ₹2,000
-                            </option>
-                            <option value="₹3,000 - ₹6,000 / month">
-                              ₹3,000 – ₹6,000
-                            </option>
-                            <option value="₹2,000 - ₹5,000 / month">
-                              ₹2,000 – ₹5,000
-                            </option>
-                            <option value="₹5,000 - ₹10,000 / month">
-                              ₹5,000 – ₹10,000
-                            </option>
-                            <option value="₹10,000 - ₹25,000 / month">
-                              ₹10,000 – ₹25,000
-                            </option>
-                            <option value="Above ₹25,000 / month">
-                              Above ₹25,000
-                            </option>
-                          </select>
-                          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label htmlFor="contact-property" className={labelClass}>
-                          Property type
-                        </label>
-                        <div className="relative">
-                          <select
-                            id="contact-property"
-                            value={formData.propertyType}
-                            onChange={(e) =>
-                              updateField('propertyType', e.target.value)
-                            }
-                            className={`${inputClass} appearance-none pr-9`}
-                          >
-                            {propertyOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                        </div>
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label htmlFor="contact-date" className={labelClass}>
-                          Preferred site visit date
-                          <span className="ml-2 font-normal text-slate-400">
-                            (optional)
-                          </span>
-                        </label>
-                        <input
-                          id="contact-date"
-                          type="date"
-                          min={minDate || undefined}
-                          value={formData.preferredDate}
-                          onChange={(e) =>
-                            updateField('preferredDate', e.target.value)
-                          }
-                          className={inputClass}
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label
-                          htmlFor="contact-requirement"
-                          className={labelClass}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1">
+                      {office.phones.map((p) => (
+                        <a
+                          key={p}
+                          href={`tel:+91${p}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-800 hover:underline"
                         >
-                          Tell us about your project
-                          <span className="ml-2 font-normal text-slate-400">
-                            (optional)
-                          </span>
-                        </label>
-                        <textarea
-                          id="contact-requirement"
-                          rows={4}
-                          maxLength={1500}
-                          placeholder="For example: a 5 kW rooftop system, battery backup, solar panels for a factory, or help choosing suitable products..."
-                          value={formData.requirement}
-                          onChange={(e) =>
-                            updateField('requirement', e.target.value)
-                          }
-                          className={`${inputClass} resize-y leading-6`}
-                        />
-                        <p className="mt-1.5 text-right text-xs text-slate-400">
-                          {formData.requirement.length}/1500
-                        </p>
-                      </div>
+                          <Phone className="h-3.5 w-3.5" />
+                          {formatPhone(p)}
+                        </a>
+                      ))}
+
+                      {office.address && (
+                        <a
+                          href={mapsLink(office.address)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:underline"
+                        >
+                          <Navigation className="h-3.5 w-3.5" />
+                          Directions
+                        </a>
+                      )}
                     </div>
                   </div>
-
-                  {/* Submit */}
-                  <div className="border-t border-slate-100 pt-6">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="group flex w-full items-center justify-center gap-3 rounded-xl bg-[#123d2b] px-5 py-4 text-sm font-bold text-white shadow-lg shadow-emerald-950/10 transition duration-200 hover:bg-emerald-800 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-emerald-700/20 disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-                          Processing your details...
-                        </>
-                      ) : (
-                        <>
-                          <CalendarDays className="h-5 w-5" />
-                          Request a Solar Consultation
-                          <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                        </>
-                      )}
-                    </button>
-
-                    <p className="mt-4 flex items-start justify-center gap-2 text-center text-xs leading-5 text-slate-500">
-                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                      Your information is provided to LuminixSolar so the team
-                      can respond to your enquiry.
-                    </p>
-                  </div>
-                </form>
-              )}
-            </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

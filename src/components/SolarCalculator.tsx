@@ -1,21 +1,19 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Calculator,
-  Zap,
-  TrendingDown,
+  ArrowRight,
   BadgeIndianRupee,
-  Leaf,
-  ShieldCheck,
-  Sun,
-  CheckCircle2,
+  Calculator,
+  FileText,
   Info,
-  PanelsTopLeft,
-  Building2,
-  Plus,
+  Leaf,
   Minus,
-  ArrowDown,
+  PanelsTopLeft,
+  Plus,
+  Sun,
+  TrendingDown,
+  X,
 } from 'lucide-react';
 
 interface SolarCalculatorProps {
@@ -25,18 +23,14 @@ interface SolarCalculatorProps {
 const formatINR = (amount: number) =>
   `₹${Math.round(amount).toLocaleString('en-IN')}`;
 
-// Constants based on official Luminix Solar benchmarks
-const AVG_DAILY_UNITS_MIN = 5; // 5 units/day/kW
-const AVG_DAILY_UNITS_MAX = 6; // 6 units/day/kW
+// Benchmarks
+const AVG_DAILY_UNITS_MIN = 5; // units/day/kW
+const AVG_DAILY_UNITS_MAX = 6; // units/day/kW
 const AVG_MONTHLY_UNITS_PER_KW = 5.5 * 30; // ~165 units/month/kW
-const ROOF_AREA_PER_KW = 80; // 8 * 10 sqft = 80 sqft per 1kW
+const ROOF_AREA_PER_KW = 80; // 8 x 10 sq ft per kW
 
 // Pricing model:
-// 1kW: 70k
-// 2kW: 125k
-// 3kW: 180k
-// After 3kW up to 5kW: +55k/kW
-// After 5kW: +50k/kW
+// 1kW: 70k | 2kW: 125k | 3kW: 180k | 3–5kW: +55k/kW | >5kW: +50k/kW
 const calculateGrossCost = (kw: number): number => {
   if (kw <= 0) return 0;
   if (kw <= 1) return Math.round(70000 * Math.max(0.5, kw));
@@ -47,687 +41,760 @@ const calculateGrossCost = (kw: number): number => {
 };
 
 // Subsidy model:
-// 1kW: 30k (Central) + 15k (State) = 45k
-// 2kW: 60k (Central) + 30k (State) = 90k
-// >= 3kW: 78k (Central) + 30k (State) = 108k (fixed)
+// <2kW: 30k central + 15k state | 2–3kW: 60k + 30k | >=3kW: 78k + 30k
 const calculateSubsidy = (kw: number) => {
-  if (kw < 2) {
-    return {
-      central: 30000,
-      state: 15000,
-      total: 45000,
-    };
-  } else if (kw < 3) {
-    return {
-      central: 60000,
-      state: 30000,
-      total: 90000,
-    };
-  } else {
-    return {
-      central: 78000,
-      state: 30000,
-      total: 108000,
-    };
-  }
+  if (kw < 2) return { central: 30000, state: 15000, total: 45000 };
+  if (kw < 3) return { central: 60000, state: 30000, total: 90000 };
+  return { central: 78000, state: 30000, total: 108000 };
 };
 
 const POPULAR_CAPACITIES = [3, 5, 10];
 
-const SolarCalculator = ({
-  // onApplyForCapacity is retained for backwards compatibility
-}: SolarCalculatorProps) => {
-  // Configurable tariff per unit with default ₹7 / unit
+const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
   const [tariffPerUnit, setTariffPerUnit] = useState<number>(7);
-
-  // System capacity in kW (default to 3 kW - most popular residential capacity)
   const [capacityKw, setCapacityKw] = useState<number>(3);
   const [monthlyBill, setMonthlyBill] = useState<number>(3500);
   const [inputMode, setInputMode] = useState<'capacity' | 'bill'>('capacity');
 
-  // Ref to scroll to results and KPIs on mobile
-  const resultsRef = useRef<HTMLDivElement>(null);
+  // Text drafts so people can clear / retype the fields freely on mobile
+  const [capacityText, setCapacityText] = useState<string>('3');
+  const [billText, setBillText] = useState<string>('3500');
+  const [showTariff, setShowTariff] = useState<boolean>(false);
+  const [showDetails, setShowDetails] = useState<boolean>(false);
 
-  const scrollToResults = () => {
-    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  // Close details sheet with Escape and stop the page behind it from scrolling
+  useEffect(() => {
+    if (!showDetails) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowDetails(false);
+    };
+    document.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showDetails]);
 
-  // Tariff adjustment helpers
-  const decreaseTariff = () => {
-    setTariffPerUnit((prev) => Math.max(3, Math.round((prev - 0.5) * 10) / 10));
-  };
-
-  const increaseTariff = () => {
-    setTariffPerUnit((prev) => Math.min(25, Math.round((prev + 0.5) * 10) / 10));
-  };
-
-  // Handlers for bidirectional syncing & manual input
-  const handleCapacityChange = (kw: number) => {
-    const clampedKw = Math.max(0.5, Math.min(50, kw));
-    setCapacityKw(clampedKw);
-    // Sync approx monthly bill based on generation at current tariff
-    const approxBill = Math.round(clampedKw * AVG_MONTHLY_UNITS_PER_KW * tariffPerUnit);
+  // ---------- handlers ----------
+  const applyCapacity = (kw: number, tariff = tariffPerUnit, skipText = false) => {
+    const clamped = Math.max(0.5, Math.min(50, kw));
+    const approxBill = Math.round(clamped * AVG_MONTHLY_UNITS_PER_KW * tariff);
+    setCapacityKw(clamped);
     setMonthlyBill(approxBill);
+    setBillText(String(approxBill));
+    if (!skipText) setCapacityText(String(clamped));
     setInputMode('capacity');
   };
 
-  const handleBillChange = (bill: number) => {
+  const applyBill = (bill: number, tariff = tariffPerUnit, skipText = false) => {
     const clampedBill = Math.max(100, bill);
+    const units = clampedBill / Math.max(1, tariff);
+    const kw = Math.max(
+      1,
+      Math.min(50, Math.round((units / AVG_MONTHLY_UNITS_PER_KW) * 10) / 10)
+    );
     setMonthlyBill(clampedBill);
-    // Estimated units consumed = bill / tariff
-    const unitsConsumed = clampedBill / Math.max(1, tariffPerUnit);
-    // Capacity needed to offset this bill:
-    const calculatedKw = Math.max(1, Math.min(50, Math.round((unitsConsumed / AVG_MONTHLY_UNITS_PER_KW) * 10) / 10));
-    setCapacityKw(calculatedKw);
+    setCapacityKw(kw);
+    setCapacityText(String(kw));
+    if (!skipText) setBillText(String(clampedBill));
     setInputMode('bill');
   };
 
-  // Steppers for quick adjustment
-  const stepCapacity = (delta: number) => {
-    handleCapacityChange(Math.round((capacityKw + delta) * 10) / 10);
+  const changeTariff = (next: number) => {
+    const t = Math.min(25, Math.max(3, Math.round(next * 10) / 10));
+    setTariffPerUnit(t);
+    // keep the active input as the source of truth
+    if (inputMode === 'bill') applyBill(monthlyBill, t, true);
+    else applyCapacity(capacityKw, t, true);
   };
 
-  const stepBill = (delta: number) => {
-    handleBillChange(Math.max(500, monthlyBill + delta));
-  };
+  const stepCapacity = (delta: number) =>
+    applyCapacity(Math.round((capacityKw + delta) * 10) / 10);
+  const stepBill = (delta: number) =>
+    applyBill(Math.max(500, monthlyBill + delta));
 
-  // Technical Calculations
-  const roofAreaSqFt = Math.round(capacityKw * ROOF_AREA_PER_KW); // 8 * 10 sqft per 1kW
+  // ---------- calculations ----------
+  const roofAreaSqFt = Math.round(capacityKw * ROOF_AREA_PER_KW);
   const dailyUnitsMin = (capacityKw * AVG_DAILY_UNITS_MIN).toFixed(1).replace(/\.0$/, '');
   const dailyUnitsMax = (capacityKw * AVG_DAILY_UNITS_MAX).toFixed(1).replace(/\.0$/, '');
   const monthlyGenerationUnits = Math.round(capacityKw * AVG_MONTHLY_UNITS_PER_KW);
 
-  // Financial Calculations
   const grossCost = calculateGrossCost(capacityKw);
   const subsidy = calculateSubsidy(capacityKw);
   const netEstimatedCost = Math.max(0, grossCost - subsidy.total);
 
-  // Monthly savings based on generation at user's tariff rate
   const potentialMonthlySavings = Math.round(monthlyGenerationUnits * tariffPerUnit);
-  const monthlySavings = inputMode === 'bill'
-    ? Math.min(monthlyBill, potentialMonthlySavings)
-    : potentialMonthlySavings;
+  const monthlySavings =
+    inputMode === 'bill'
+      ? Math.min(monthlyBill, potentialMonthlySavings)
+      : potentialMonthlySavings;
   const annualSavings = monthlySavings * 12;
-
-  // 25-Year Lifetime Savings
   const lifetimeSavings = Math.round(annualSavings * 25);
-
-  // Payback period
   const paybackYears = (netEstimatedCost / Math.max(annualSavings, 1)).toFixed(1);
-
-  // Environmental offset
   const annualCO2Tons = (monthlyGenerationUnits * 12 * 0.00082).toFixed(1);
 
-  return (
-    <section
-      id="calculator"
-      className="relative isolate overflow-hidden bg-[#F5F8F3] py-14 sm:py-20 lg:py-24"
-    >
-      {/* Background with soft solar ambiance */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-20 bg-cover bg-center opacity-25"
-        style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2400&q=85')",
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-[#F5F8F3]/90 via-[#F5F8F3]/95 to-[#E8F2E8]/80"
-      />
+  const handleApply = () => {
+    if (onApplyForCapacity) {
+      onApplyForCapacity(`${capacityKw} kW rooftop solar`);
+    } else {
+      document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Heading & Top Tiles */}
-        <div className="grid items-end gap-6 lg:grid-cols-12 lg:gap-12">
-          <div className="lg:col-span-7">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-emerald-300 bg-white/90 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 shadow-sm backdrop-blur-sm">
-              <Sun className="h-4 w-4 text-amber-500 fill-amber-400" />
-              PM Surya Ghar Muft Bijli Yojana
-            </div>
+  // ---------- shared styles (same tokens as the hero form) ----------
+  const labelClass = 'mb-1.5 block text-xs font-semibold text-slate-600';
+  const stepBtn =
+    'flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-900 active:scale-95';
 
-            <h2 className="max-w-4xl text-3xl font-extrabold leading-tight tracking-tight text-[#183D2B] sm:text-4xl lg:text-5xl">
-              Solar Savings & Subsidy Calculator
-            </h2>
+  // ---------- desktop layout (separate design from mobile) ----------
+  const subsidyPct = Math.min(100, Math.round((subsidy.total / Math.max(grossCost, 1)) * 100));
+
+  const desktopView = (
+    <div className="hidden lg:block">
+      {/* Header row */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-medium text-emerald-900 sm:px-4 sm:py-2 sm:text-sm">
+            <Sun className="h-4 w-4 shrink-0 text-emerald-700" />
+            PM Surya Ghar Muft Bijli Yojana
           </div>
-
-          {/* Symmetrical Equal-Size Metric Tiles: Same line on mobile */}
-          <div className="lg:col-span-5 lg:justify-self-end w-full max-w-md lg:max-w-none">
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 w-full">
-              {/* Tile 1: Tariff Cost Adjuster */}
-              <div className="flex flex-col justify-between rounded-2xl border border-emerald-200/90 bg-white/95 p-3.5 sm:p-4 shadow-sm backdrop-blur-sm min-h-[84px]">
-                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">
-                  Electricity Tariff
-                </p>
-                <div className="mt-1 flex items-center justify-between gap-1">
-                  <p className="text-base sm:text-lg font-extrabold text-[#183D2B] whitespace-nowrap">
-                    ₹{tariffPerUnit} <span className="text-[11px] font-normal text-slate-500">/ Unit</span>
-                  </p>
-                  <div className="flex items-center gap-0.5 sm:gap-1 rounded-lg bg-emerald-50 p-0.5 border border-emerald-200/80">
-                    <button
-                      type="button"
-                      onClick={decreaseTariff}
-                      aria-label="Decrease electricity tariff rate"
-                      title="Decrease tariff by ₹0.5"
-                      className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-white text-emerald-900 shadow-xs border border-emerald-200/60 hover:bg-emerald-100 hover:text-emerald-950 active:scale-95 transition"
-                    >
-                      <Minus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={increaseTariff}
-                      aria-label="Increase electricity tariff rate"
-                      title="Increase tariff by ₹0.5"
-                      className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-md bg-white text-emerald-900 shadow-xs border border-emerald-200/60 hover:bg-emerald-100 hover:text-emerald-950 active:scale-95 transition"
-                    >
-                      <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tile 2: Benchmark Output (Exact same size) */}
-              <div className="flex flex-col justify-between rounded-2xl border border-emerald-200/90 bg-white/95 p-3.5 sm:p-4 shadow-sm backdrop-blur-sm min-h-[84px]">
-                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">
-                  Benchmark Output
-                </p>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <p className="text-base sm:text-lg font-extrabold text-[#183D2B] whitespace-nowrap">
-                    5 – 6 Units
-                  </p>
-                  <span className="text-[11px] font-normal text-slate-500 truncate">
-                    / Day / kW
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <h2 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[-0.035em] text-[#102E24] sm:mt-5 sm:text-5xl xl:text-6xl">
+            How much
+            <br />
+            <span className="font-semibold text-emerald-700">can you save?</span>
+          </h2>
         </div>
 
-        {/* Main Calculator Grid */}
-        <div className="mt-10 grid items-stretch gap-6 lg:mt-12 lg:grid-cols-12 lg:gap-8">
-          {/* Left Column: Interactive Controls & Detailed Benchmark Standards */}
-          <div className="flex h-full flex-col justify-between gap-4 lg:col-span-5">
-            <div className="flex flex-col overflow-hidden rounded-3xl border border-white/80 bg-white shadow-xl shadow-slate-900/10">
-              {/* Header */}
-              <div className="bg-[#123A2C] px-6 py-5 text-white sm:px-7">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-                      <Calculator className="h-5 w-5 text-emerald-300" />
-                    </div>
-                    <h3 className="text-base font-bold sm:text-lg">Configure Your System</h3>
-                  </div>
+        <div className="grid w-full grid-cols-3 divide-x divide-slate-200 rounded-2xl border border-slate-200 bg-slate-50 lg:w-auto lg:shrink-0">
+          {[
+            { big: '5–6 units', small: 'made daily by 1 kW' },
+            { big: '80 sq. ft.', small: 'roof space for 1 kW' },
+            { big: '₹1,08,000', small: 'maximum subsidy' },
+          ].map((f) => (
+            <div key={f.big} className="px-3 py-3 sm:px-6 sm:py-4">
+              <p className="text-sm font-semibold text-[#102E24] sm:text-lg">{f.big}</p>
+              <p className="mt-0.5 text-[11px] leading-snug text-slate-500 sm:text-xs">{f.small}</p>
+            </div>
+          ))}
+        </div>
+      </div>
 
-                  {/* Desktop: Full Live Calculation badge with blinking pulse */}
-                  <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold text-emerald-200 border border-emerald-400/30">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                    </span>
-                    Live Calculation
-                  </span>
+      {/* Main card: controls on the left, results on the right */}
+      <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-2xl lg:mt-10 lg:grid-cols-12 lg:rounded-[28px] border border-slate-200 bg-white shadow-2xl shadow-emerald-950/10">
+        {/* ---- Controls ---- */}
+        <div className="p-5 sm:p-8 lg:col-span-5 xl:p-10">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
+              <Calculator className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+                Tell us about your home
+              </h3>
+              <p className="text-sm text-slate-500">Numbers on the right change as you type.</p>
+            </div>
+          </div>
 
-                  {/* Mobile: Compact Live Blinking Signal */}
-                  <div
-                    className="inline-flex sm:hidden items-center gap-1.5 rounded-full bg-emerald-500/20 px-2.5 py-1 text-[10px] font-bold text-emerald-200 border border-emerald-400/30"
-                    title="Live calculation active"
-                  >
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                    </span>
-                    Live
+          <div role="tablist" className="mt-7 grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1 text-sm font-semibold">
+            {(
+              [
+                { id: 'capacity', label: 'By solar size', Icon: PanelsTopLeft },
+                { id: 'bill', label: 'By my bill', Icon: BadgeIndianRupee },
+              ] as const
+            ).map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={inputMode === id}
+                onClick={() => setInputMode(id)}
+                className={`flex min-h-11 items-center justify-center gap-2 rounded-md px-3 transition ${
+                  inputMode === id
+                    ? 'bg-white font-bold text-emerald-900 shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Icon className="h-4 w-4 text-emerald-700" />
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6">
+            {inputMode === 'capacity' ? (
+              <div>
+                <label htmlFor="calc-kw-d" className={labelClass}>
+                  Solar plant size (kW)
+                </label>
+                <div className="flex items-center gap-2">
+                  <button type="button" aria-label="Decrease size by 1 kW" onClick={() => stepCapacity(-1)} className={stepBtn}>
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      id="calc-kw-d"
+                      type="text"
+                      inputMode="decimal"
+                      value={capacityText}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/[^0-9.]/g, '');
+                        setCapacityText(raw);
+                        const n = parseFloat(raw);
+                        if (!isNaN(n) && n > 0) applyCapacity(n, tariffPerUnit, true);
+                      }}
+                      onBlur={() => setCapacityText(String(capacityKw))}
+                      className="box-border w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-4 pr-14 text-2xl sm:py-3 sm:text-3xl font-semibold text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10"
+                    />
+                    <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">kW</span>
                   </div>
+                  <button type="button" aria-label="Increase size by 1 kW" onClick={() => stepCapacity(1)} className={stepBtn}>
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <input
+                  type="range"
+                  min={0.5}
+                  max={20}
+                  step={0.5}
+                  value={Math.min(capacityKw, 20)}
+                  onChange={(e) => applyCapacity(parseFloat(e.target.value))}
+                  aria-label="Solar size slider"
+                  className="mt-5 h-2 w-full cursor-pointer accent-emerald-800"
+                />
+                <div className="mt-1 flex justify-between text-xs text-slate-400">
+                  <span>0.5 kW</span>
+                  <span>20 kW</span>
+                </div>
+
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="text-xs text-slate-500">Popular:</span>
+                  {POPULAR_CAPACITIES.map((kw) => (
+                    <button
+                      key={kw}
+                      type="button"
+                      aria-pressed={capacityKw === kw}
+                      onClick={() => applyCapacity(kw)}
+                      className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
+                        capacityKw === kw
+                          ? 'border-emerald-800 bg-emerald-800 text-white'
+                          : 'border-slate-200 text-slate-700 hover:border-emerald-700 hover:bg-emerald-50'
+                      }`}
+                    >
+                      {kw} kW
+                    </button>
+                  ))}
                 </div>
               </div>
-
-              <div className="flex flex-1 flex-col p-6 sm:p-7">
-                {/* Mode Selector Tabs */}
-                <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-slate-100 p-1.5 text-xs font-semibold">
-                  <button
-                    type="button"
-                    onClick={() => setInputMode('capacity')}
-                    className={`flex items-center justify-center gap-1.5 rounded-lg py-2 transition ${
-                      inputMode === 'capacity'
-                        ? 'bg-white text-emerald-950 shadow-sm font-bold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <PanelsTopLeft className="h-3.5 w-3.5 text-emerald-700" />
-                    By System Size (kW)
+            ) : (
+              <div>
+                <label htmlFor="calc-bill-d" className={labelClass}>
+                  Your monthly light bill
+                </label>
+                <div className="flex items-center gap-2">
+                  <button type="button" aria-label="Decrease bill by ₹500" onClick={() => stepBill(-500)} className={stepBtn}>
+                    <Minus className="h-4 w-4" />
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setInputMode('bill')}
-                    className={`flex items-center justify-center gap-1.5 rounded-lg py-2 transition ${
-                      inputMode === 'bill'
-                        ? 'bg-white text-emerald-950 shadow-sm font-bold'
-                        : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <BadgeIndianRupee className="h-3.5 w-3.5 text-emerald-700" />
-                    By Monthly Bill (₹)
+                  <div className="relative min-w-0 flex-1">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-slate-400">₹</span>
+                    <input
+                      id="calc-bill-d"
+                      type="text"
+                      inputMode="numeric"
+                      value={billText}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/\D/g, '').slice(0, 7);
+                        setBillText(raw);
+                        const n = parseInt(raw, 10);
+                        if (!isNaN(n) && n > 0) applyBill(n, tariffPerUnit, true);
+                      }}
+                      onBlur={() => setBillText(String(monthlyBill))}
+                      className="box-border w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-2xl sm:py-3 sm:text-3xl font-semibold text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10"
+                    />
+                  </div>
+                  <button type="button" aria-label="Increase bill by ₹500" onClick={() => stepBill(500)} className={stepBtn}>
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
 
-                {/* Primary Metric Box with Direct Manual Input */}
-                <div className="mt-5 rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/80 to-emerald-100/40 p-5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-                      {inputMode === 'capacity' ? 'System Size' : 'Monthly Electricity Bill'}
-                    </p>
-                    {inputMode === 'bill' && (
-                      <span className="rounded-md bg-emerald-200/70 px-2 py-0.5 text-[11px] font-bold text-emerald-900">
-                        Recommends {capacityKw} kW
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Small 3 tiles with N kW only on top of manual input bar */}
-                  {inputMode === 'capacity' && (
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      {POPULAR_CAPACITIES.map((kw) => {
-                        const active = capacityKw === kw;
-                        return (
-                          <button
-                            key={kw}
-                            type="button"
-                            onClick={() => handleCapacityChange(kw)}
-                            aria-pressed={active}
-                            className={`rounded-xl border py-1.5 text-xs font-bold transition text-center shadow-xs ${
-                              active
-                                ? 'border-emerald-700 bg-emerald-700 text-white'
-                                : 'border-emerald-200 bg-white text-slate-700 hover:border-emerald-400 hover:bg-emerald-50'
-                            }`}
-                          >
-                            {kw} kW
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Manual Number Input Field with Stepper Buttons */}
-                  <div className="mt-3 flex items-center gap-2">
-                    {inputMode === 'capacity' ? (
-                      <div className="relative flex flex-1 items-center">
-                        <input
-                          type="number"
-                          min="0.5"
-                          max="50"
-                          step="0.5"
-                          value={capacityKw}
-                          onChange={(e) => handleCapacityChange(parseFloat(e.target.value) || 1)}
-                          className="w-full rounded-xl border border-emerald-300 bg-white px-4 py-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#123A2C] shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                          placeholder="3"
-                          aria-label="Manual solar system size in kW"
-                        />
-                        <span className="pointer-events-none absolute right-4 text-sm font-bold text-slate-500">
-                          kW Rooftop
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="relative flex flex-1 items-center">
-                        <span className="pointer-events-none absolute left-4 text-xl sm:text-2xl font-bold text-slate-500">
-                          ₹
-                        </span>
-                        <input
-                          type="number"
-                          min="500"
-                          max="100000"
-                          step="100"
-                          value={monthlyBill}
-                          onChange={(e) => handleBillChange(parseFloat(e.target.value) || 0)}
-                          className="w-full rounded-xl border border-emerald-300 bg-white pl-9 pr-16 py-2.5 text-2xl sm:text-3xl font-extrabold tracking-tight text-[#123A2C] shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                          placeholder="3500"
-                          aria-label="Manual monthly electricity bill in rupees"
-                        />
-                        <span className="pointer-events-none absolute right-4 text-xs font-semibold text-slate-500">
-                          / month
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Small Increment / Decrement Steppers */}
-                    <div className="flex flex-col gap-1">
-                      <button
-                        type="button"
-                        onClick={() => (inputMode === 'capacity' ? stepCapacity(1) : stepBill(500))}
-                        aria-label="Increase value"
-                        title={inputMode === 'capacity' ? 'Increase by 1 kW' : 'Increase by ₹500'}
-                        className="flex h-6 w-8 items-center justify-center rounded-lg bg-white border border-emerald-300 text-emerald-900 shadow-xs hover:bg-emerald-50 active:scale-95 transition"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => (inputMode === 'capacity' ? stepCapacity(-1) : stepBill(-500))}
-                        aria-label="Decrease value"
-                        title={inputMode === 'capacity' ? 'Decrease by 1 kW' : 'Decrease by ₹500'}
-                        className="flex h-6 w-8 items-center justify-center rounded-lg bg-white border border-emerald-300 text-emerald-900 shadow-xs hover:bg-emerald-50 active:scale-95 transition"
-                      >
-                        <Minus className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <p className="mt-2.5 hidden sm:block text-xs text-slate-600">
-                    {inputMode === 'capacity' ? (
-                      <>
-                        Generates approximately <strong className="text-slate-900">{dailyUnitsMin} to {dailyUnitsMax} units/day</strong> ({monthlyGenerationUnits.toLocaleString('en-IN')} units/month)
-                      </>
-                    ) : (
-                      <>
-                        Approximately <strong className="text-slate-900">{Math.round(monthlyBill / tariffPerUnit).toLocaleString('en-IN')} units</strong> consumed per month at ₹{tariffPerUnit}/unit
-                      </>
-                    )}
-                  </p>
+                <input
+                  type="range"
+                  min={500}
+                  max={30000}
+                  step={100}
+                  value={Math.min(Math.max(monthlyBill, 500), 30000)}
+                  onChange={(e) => applyBill(parseInt(e.target.value, 10))}
+                  aria-label="Monthly bill slider"
+                  className="mt-5 h-2 w-full cursor-pointer accent-emerald-800"
+                />
+                <div className="mt-1 flex justify-between text-xs text-slate-400">
+                  <span>₹500</span>
+                  <span>₹30,000</span>
                 </div>
 
-                {/* Rooftop Area Specification Card */}
-                <div className="mt-5 flex items-center justify-between gap-4 rounded-2xl border border-slate-200/90 bg-slate-50/70 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-800">
-                      <PanelsTopLeft className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-slate-500">Required Rooftop Area</p>
-                      <p className="text-sm font-bold text-slate-900">
-                        {roofAreaSqFt} sq. ft. shadow-free roof
-                      </p>
-                      <p className="text-[10px] text-slate-500 hidden sm:block">
-                        Based on 8 × 10 ft (80 sq. ft.) per 1 kW
-                      </p>
-                    </div>
-                  </div>
+                <p className="mt-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-900">
+                  You use about{' '}
+                  <strong>{Math.round(monthlyBill / tariffPerUnit).toLocaleString('en-IN')} units</strong>{' '}
+                  every month. We suggest a <strong>{capacityKw} kW</strong> solar plant.
+                </p>
+              </div>
+            )}
+          </div>
 
-                  <span className="shrink-0 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-center">
-                    <span className="block text-xs font-semibold text-emerald-800">Capacity</span>
-                    <span className="text-base font-extrabold text-emerald-950">{capacityKw} kW</span>
-                  </span>
-                </div>
-
-                {/* Mobile CTA to focus on estimated bill reduction & other KPIs */}
-                <button
-                  type="button"
-                  onClick={scrollToResults}
-                  className="mt-4 flex sm:hidden w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 py-3.5 px-4 text-sm font-bold text-white shadow-md shadow-emerald-950/15 hover:bg-emerald-800 active:scale-[0.99] transition"
-                >
-                  <TrendingDown className="h-4 w-4 text-emerald-200" />
-                  <span>View Estimate Savings</span>
-                  <ArrowDown className="h-4 w-4 text-emerald-200 animate-bounce" />
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-medium text-slate-500">Price per unit</p>
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <button type="button" aria-label="Decrease tariff by ₹0.5" onClick={() => changeTariff(tariffPerUnit - 0.5)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-emerald-50 active:scale-95">
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="text-lg font-semibold text-slate-900">₹{tariffPerUnit}</span>
+                <button type="button" aria-label="Increase tariff by ₹0.5" onClick={() => changeTariff(tariffPerUnit + 0.5)} className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 transition hover:bg-emerald-50 active:scale-95">
+                  <Plus className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            {/* Detailed Point-Wise Benchmark Standards Card for Left Column (Desktop & Tablet only) */}
-            <div className="hidden sm:flex flex-1 flex-col justify-between rounded-3xl border border-white/80 bg-white p-5 shadow-xl shadow-slate-900/10 sm:p-6">
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-medium text-slate-500">Roof space needed</p>
+              <p className="mt-2 text-lg font-semibold text-slate-900">
+                {roofAreaSqFt.toLocaleString('en-IN')} sq. ft.
+              </p>
+              <p className="text-xs text-slate-500">shade-free roof</p>
+            </div>
+          </div>
+          <div className="mt-5 flex items-center justify-between gap-3 rounded-lg bg-emerald-50 px-4 py-3 lg:hidden">
+            <div className="min-w-0">
+              <p className="text-xs text-emerald-900/70">You can save</p>
+              <p className="text-lg font-semibold text-emerald-900">
+                {formatINR(monthlySavings)}
+                <span className="ml-1 text-xs font-normal text-emerald-900/70">/ month</span>
+              </p>
+            </div>
+            <div className="shrink-0 text-right">
+              <p className="text-xs text-emerald-900/70">You pay</p>
+              <p className="text-lg font-semibold text-emerald-900">{formatINR(netEstimatedCost)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Results ---- */}
+        <div className="relative isolate flex flex-col justify-between overflow-hidden bg-[#102E24] p-5 text-white sm:p-8 lg:col-span-7 xl:p-10">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-20 bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "url('https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85')",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(10,40,29,0.97) 0%, rgba(10,40,29,0.9) 60%, rgba(10,40,29,0.8) 100%)',
+            }}
+          />
+
+          <div>
+            <div className="flex items-center gap-2 text-sm font-medium text-emerald-300">
+              <TrendingDown className="h-4 w-4" />
+              You can save every month
+            </div>
+            <div className="mt-3 flex flex-wrap items-baseline gap-x-3">
+              <span className="text-5xl font-semibold tracking-[-0.04em] sm:text-7xl xl:text-8xl">
+                {formatINR(monthlySavings)}
+              </span>
+              <span className="text-lg text-white/60">/ month</span>
+            </div>
+            <p className="mt-3 text-base text-white/75">
+              That is about <span className="font-semibold text-white">{formatINR(annualSavings)}</span> saved every year on your light bill.
+            </p>
+          </div>
+
+          {/* Three key numbers */}
+          <div className="mt-6 grid grid-cols-1 divide-y divide-white/15 border-y border-white/15 sm:mt-8 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="py-4 sm:py-5 sm:pr-4">
+              <p className="text-xs text-white/60">Power made daily</p>
+              <p className="mt-1 text-xl font-semibold">{dailyUnitsMin}–{dailyUnitsMax} units</p>
+              <p className="mt-0.5 text-xs text-white/50">~{monthlyGenerationUnits.toLocaleString('en-IN')} / month</p>
+            </div>
+            <div className="py-4 sm:px-6 sm:py-5">
+              <p className="text-xs text-white/60">Cost recovered in</p>
+              <p className="mt-1 text-xl font-semibold text-amber-400">~{paybackYears} years</p>
+              <p className="mt-0.5 text-xs text-white/50">Counting subsidy</p>
+            </div>
+            <div className="py-4 sm:py-5 sm:pl-6">
+              <p className="text-xs text-white/60">Savings in 25 years</p>
+              <p className="mt-1 text-xl font-semibold text-emerald-300">₹{(lifetimeSavings / 100000).toFixed(2)} Lakh</p>
+              <p className="mt-0.5 text-xs text-white/50">Panels last 25+ years</p>
+            </div>
+          </div>
+
+          {/* Cost split bar */}
+          <div className="mt-6 sm:mt-8">
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm text-white/70">Total cost of your solar plant</p>
+              <p className="text-xl font-semibold">{formatINR(grossCost)}</p>
+            </div>
+            <div className="mt-3 flex h-4 overflow-hidden rounded-full bg-white/10">
+              <div className="bg-emerald-400 transition-all duration-500" style={{ width: `${subsidyPct}%` }} />
+              <div className="bg-amber-500 transition-all duration-500" style={{ width: `${100 - subsidyPct}%` }} />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
-                    <ShieldCheck className="h-4 w-4 text-emerald-700" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-[#183D2B]">
-                      Benchmark Specifications & Standards
-                    </h4>
-                    <p className="text-[11px] text-slate-500">
-                      Official technical sizing & government scheme rules
-                    </p>
-                  </div>
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                  Government gives you
                 </div>
-
-                <div className="mt-3.5 space-y-3">
-                  <div className="flex items-start gap-2.5 text-xs">
-                    <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-                      <Zap className="h-2.5 w-2.5" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-900">Energy Generation: </span>
-                      <span className="text-slate-600">
-                        1 kW rooftop plant produces <strong className="text-emerald-950 font-bold">5 to 6 units (kWh)/day</strong> (~165 units/month).
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2.5 text-xs">
-                    <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-                      <PanelsTopLeft className="h-2.5 w-2.5" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-900">Rooftop Requirement: </span>
-                      <span className="text-slate-600">
-                        Requires <strong className="text-emerald-950 font-bold">80 sq. ft. (8 × 10 ft)</strong> of shadow-free rooftop area per 1 kW.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2.5 text-xs">
-                    <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-                      <BadgeIndianRupee className="h-2.5 w-2.5" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-900">Tariff Basis: </span>
-                      <span className="text-slate-600">
-                        Calculated on base rate of <strong className="text-emerald-950 font-bold">₹{tariffPerUnit}/unit</strong> (adjustable using top buttons).
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-2.5 text-xs">
-                    <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
-                      <Building2 className="h-2.5 w-2.5" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-slate-900">Subsidy Scheme: </span>
-                      <span className="text-slate-600">
-                        Eligible for <strong className="text-emerald-950 font-bold">PM Surya Ghar (Central)</strong> + State Govt. DBT grants.
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                <p className="mt-1 text-xl font-semibold text-emerald-300 sm:text-2xl">{formatINR(subsidy.total)}</p>
+                <p className="text-xs text-white/50">
+                  Central {formatINR(subsidy.central)} + State {formatINR(subsidy.state)}
+                </p>
               </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-start gap-2 text-[10px] text-slate-400">
-                <Info className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
-                <span>
-                  Final system sizing and savings will be confirmed during the on-site technical inspection.
-                </span>
+              <div>
+                <div className="flex items-center gap-2 text-sm text-white/70">
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                  You pay*
+                </div>
+                <p className="mt-1 text-xl font-semibold text-amber-400 sm:text-2xl">{formatINR(netEstimatedCost)}</p>
+                <p className="text-xs text-white/50">After subsidy</p>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Financial Results & Detailed Subsidy Breakdown */}
-          <div
-            ref={resultsRef}
-            id="calculator-results"
-            className="flex h-full flex-col justify-between gap-4 lg:col-span-7 scroll-mt-6"
+          {/* Footer: nature note + CTA */}
+          <div className="mt-6 flex flex-col gap-5 sm:mt-8 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10">
+                <Leaf className="h-4 w-4 text-emerald-300" />
+              </span>
+              <p className="text-xs leading-5 text-white/70">
+                Saves <span className="font-semibold text-white">{annualCO2Tons} tonnes of CO₂</span> every year,
+                <br />
+                same as planting ~{(Number(annualCO2Tons) * 45).toFixed(0)} trees.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleApply}
+              className="inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-[#153D2D] transition hover:bg-emerald-50 active:scale-[0.99] sm:w-auto"
+            >
+              Get free quote for {capacityKw} kW
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex items-start gap-2 px-1 text-xs text-slate-500">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <p>*These are approximate numbers. Our engineer will visit your home and confirm the final size, cost and savings.</p>
+      </div>
+    </div>
+  );
+
+  // ---------- plain text details for the mobile sheet ----------
+  const detailSections: { title: string; rows: [string, string][] }[] = [
+    {
+      title: 'Your solar plant',
+      rows: [
+        ['Plant size', `${capacityKw} kW`],
+        ['Power made daily', `${dailyUnitsMin} to ${dailyUnitsMax} units`],
+        ['Power made monthly', `about ${monthlyGenerationUnits.toLocaleString('en-IN')} units`],
+        ['Roof space needed', `${roofAreaSqFt.toLocaleString('en-IN')} sq. ft. (shade-free)`],
+        ['Price per unit used', `₹${tariffPerUnit}`],
+      ],
+    },
+    {
+      title: 'Your savings',
+      rows: [
+        ['Every month', formatINR(monthlySavings)],
+        ['Every year', formatINR(annualSavings)],
+        ['In 25 years', `₹${(lifetimeSavings / 100000).toFixed(2)} Lakh`],
+      ],
+    },
+    {
+      title: 'Cost and subsidy',
+      rows: [
+        ['Total cost', formatINR(grossCost)],
+        ['Central subsidy (PM Surya Ghar)', formatINR(subsidy.central)],
+        ['State subsidy', formatINR(subsidy.state)],
+        ['Total subsidy', formatINR(subsidy.total)],
+        ['You pay after subsidy', formatINR(netEstimatedCost)],
+        ['Money back in', `about ${paybackYears} years`],
+      ],
+    },
+    {
+      title: 'Good for nature',
+      rows: [
+        ['CO₂ saved every year', `${annualCO2Tons} tonnes`],
+        ['Same as planting', `about ${(Number(annualCO2Tons) * 45).toFixed(0)} trees`],
+      ],
+    },
+  ];
+
+  // ---------- mobile layout (short and simple) ----------
+  const mobileView = (
+    <div className="lg:hidden">
+      <h2 className="text-4xl font-medium leading-[1.1] tracking-[-0.04em] text-[#102E24] sm:text-5xl">
+        How much
+        <br />
+        <span className="font-semibold text-emerald-700">can you save?</span>
+      </h2>
+      <p className="mt-3 text-base leading-7 text-slate-600">
+        Check your savings and the government subsidy in seconds.
+      </p>
+
+      <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-emerald-950/10">
+        {/* Tabs */}
+        <div role="tablist" className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1 text-sm font-semibold">
+          {(
+            [
+              { id: 'capacity', label: 'By solar size' },
+              { id: 'bill', label: 'By my bill' },
+            ] as const
+          ).map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={inputMode === id}
+              onClick={() => setInputMode(id)}
+              className={`min-h-11 rounded-md px-2 transition ${
+                inputMode === id
+                  ? 'bg-white font-bold text-emerald-900 shadow-sm'
+                  : 'text-slate-600'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Input */}
+        <div className="mt-5">
+          {inputMode === 'capacity' ? (
+            <>
+              <label htmlFor="calc-kw-m" className={labelClass}>
+                Solar plant size (kW)
+              </label>
+              <div className="flex items-center gap-2">
+                <button type="button" aria-label="Decrease size by 1 kW" onClick={() => stepCapacity(-1)} className={stepBtn}>
+                  <Minus className="h-4 w-4" />
+                </button>
+                <div className="relative min-w-0 flex-1">
+                  <input
+                    id="calc-kw-m"
+                    type="text"
+                    inputMode="decimal"
+                    value={capacityText}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9.]/g, '');
+                      setCapacityText(raw);
+                      const n = parseFloat(raw);
+                      if (!isNaN(n) && n > 0) applyCapacity(n, tariffPerUnit, true);
+                    }}
+                    onBlur={() => setCapacityText(String(capacityKw))}
+                    className="box-border w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-4 pr-12 text-2xl font-semibold text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10"
+                  />
+                  <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">kW</span>
+                </div>
+                <button type="button" aria-label="Increase size by 1 kW" onClick={() => stepCapacity(1)} className={stepBtn}>
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {POPULAR_CAPACITIES.map((kw) => (
+                  <button
+                    key={kw}
+                    type="button"
+                    aria-pressed={capacityKw === kw}
+                    onClick={() => applyCapacity(kw)}
+                    className={`min-h-11 rounded-lg border text-sm font-semibold transition active:scale-[0.98] ${
+                      capacityKw === kw
+                        ? 'border-emerald-800 bg-emerald-800 text-white'
+                        : 'border-slate-200 text-slate-700'
+                    }`}
+                  >
+                    {kw} kW
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <label htmlFor="calc-bill-m" className={labelClass}>
+                Your monthly light bill
+              </label>
+              <div className="flex items-center gap-2">
+                <button type="button" aria-label="Decrease bill by ₹500" onClick={() => stepBill(-500)} className={stepBtn}>
+                  <Minus className="h-4 w-4" />
+                </button>
+                <div className="relative min-w-0 flex-1">
+                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-slate-400">₹</span>
+                  <input
+                    id="calc-bill-m"
+                    type="text"
+                    inputMode="numeric"
+                    value={billText}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, '').slice(0, 7);
+                      setBillText(raw);
+                      const n = parseInt(raw, 10);
+                      if (!isNaN(n) && n > 0) applyBill(n, tariffPerUnit, true);
+                    }}
+                    onBlur={() => setBillText(String(monthlyBill))}
+                    className="box-border w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-2xl font-semibold text-slate-900 outline-none transition focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10"
+                  />
+                </div>
+                <button type="button" aria-label="Increase bill by ₹500" onClick={() => stepBill(500)} className={stepBtn}>
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+            </>
+          )}
+
+          <p className="mt-3 text-xs leading-5 text-slate-500">
+            {inputMode === 'bill' && (
+              <>
+                We suggest a <strong className="text-slate-800">{capacityKw} kW</strong> solar plant.{' '}
+              </>
+            )}
+            Needs about {roofAreaSqFt.toLocaleString('en-IN')} sq. ft. of shade-free roof.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => setShowTariff((v) => !v)}
+            aria-expanded={showTariff}
+            className="mt-1 min-h-9 text-xs font-semibold text-emerald-800 underline-offset-2 hover:underline"
           >
-            {/* Top Savings Feature Card */}
-            <div className="relative overflow-hidden rounded-3xl border border-emerald-900/10 bg-[#103C2C] p-6 text-white shadow-xl shadow-emerald-950/15 sm:p-8">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full border border-white/10"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute -right-3 -top-7 h-40 w-40 rounded-full border border-white/10"
-              />
+            Price per unit: ₹{tariffPerUnit} · {showTariff ? 'Done' : 'Change'}
+          </button>
 
-              <div className="relative">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-2 text-sm font-bold text-emerald-200">
-                    <TrendingDown className="h-4 w-4" />
-                    Estimated Bill Reduction
-                  </div>
-
-                  <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-emerald-100">
-                    Based on your inputs
-                  </span>
-                </div>
-
-                <div className="mt-6">
-                  <p className="text-xs uppercase tracking-wider text-emerald-100/70 font-semibold">
-                    Potential Monthly Savings
-                  </p>
-
-                  <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="text-4xl font-extrabold tracking-tight sm:text-6xl text-white">
-                      {formatINR(monthlySavings)}
-                    </span>
-                    <span className="text-sm font-semibold text-emerald-200">
-                      / month
-                    </span>
-                  </div>
-
-                  <p className="mt-3 text-sm text-emerald-100/80">
-                    Saves approximately{' '}
-                    <strong className="text-white font-bold">
-                      {formatINR(annualSavings)} every year
-                    </strong>{' '}
-                    on your electricity expenses.
-                  </p>
-                </div>
-
-                {/* Sub metrics inside hero card */}
-                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/15 pt-5 sm:grid-cols-3">
-                  <div>
-                    <p className="text-xs text-emerald-100/65">Daily Generation</p>
-                    <p className="mt-1 text-lg font-bold sm:text-xl">
-                      {dailyUnitsMin} – {dailyUnitsMax} units
-                    </p>
-                    <p className="mt-0.5 text-[10px] text-emerald-200/60 hidden sm:block">
-                      ~{monthlyGenerationUnits.toLocaleString('en-IN')} units / month
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-emerald-100/65">Payback Period</p>
-                    <p className="mt-1 text-lg font-bold text-amber-300 sm:text-xl">
-                      ~{paybackYears} Years
-                    </p>
-                    <p className="mt-0.5 text-[10px] text-emerald-200/60 hidden sm:block">
-                      Fast capital recovery
-                    </p>
-                  </div>
-
-                  <div className="col-span-2 sm:col-span-1">
-                    <p className="text-xs text-emerald-100/65">25-Year Lifetime Savings</p>
-                    <p className="mt-1 text-lg font-bold text-emerald-200 sm:text-xl">
-                      ₹{(lifetimeSavings / 100000).toFixed(2)} Lakh
-                    </p>
-                    <p className="mt-0.5 text-[10px] text-emerald-200/60 hidden sm:block">
-                      25 years warranty output
-                    </p>
-                  </div>
-                </div>
+          {showTariff && (
+            <div className="mt-1 flex items-center gap-2">
+              <button type="button" aria-label="Decrease tariff by ₹0.5" onClick={() => changeTariff(tariffPerUnit - 0.5)} className={stepBtn}>
+                <Minus className="h-4 w-4" />
+              </button>
+              <div className="flex min-h-11 flex-1 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-base font-semibold text-slate-900">
+                ₹{tariffPerUnit} per unit
               </div>
+              <button type="button" aria-label="Increase tariff by ₹0.5" onClick={() => changeTariff(tariffPerUnit + 0.5)} className={stepBtn}>
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Result */}
+        <div className="mt-5 rounded-xl bg-[#102E24] p-5 text-white">
+          <p className="text-xs text-white/70">You can save every month</p>
+          <p className="mt-1 text-4xl font-semibold tracking-tight text-emerald-300">
+            {formatINR(monthlySavings)}
+            <span className="ml-1.5 text-sm font-normal text-white/60">/ month</span>
+          </p>
+
+          <div className="mt-4 grid grid-cols-2 gap-4 border-t border-white/15 pt-4">
+            <div>
+              <p className="text-xs text-white/60">You pay*</p>
+              <p className="mt-0.5 text-lg font-semibold text-amber-400">{formatINR(netEstimatedCost)}</p>
+              <p className="text-[11px] leading-4 text-white/50">after {formatINR(subsidy.total)} subsidy</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/60">Money back in</p>
+              <p className="mt-0.5 text-lg font-semibold">~{paybackYears} years</p>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowDetails(true)}
+          className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 active:scale-[0.99]"
+        >
+          <FileText className="h-4 w-4 shrink-0" />
+          See full details
+        </button>
+
+        <button
+          type="button"
+          onClick={handleApply}
+          className="mt-3 flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 active:scale-[0.99]"
+        >
+          <span className="truncate">Get free quote for {capacityKw} kW</span>
+          <ArrowRight className="h-4 w-4 shrink-0" />
+        </button>
+      </div>
+
+      <p className="mt-3 px-1 text-[11px] leading-4 text-slate-500">
+        *Approximate numbers. Our engineer will confirm the final size, cost and savings.
+      </p>
+
+      {showDetails && (
+        <div
+          className="fixed inset-0 z-50 flex items-end"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Full details of your solar estimate"
+        >
+          <button
+            type="button"
+            aria-label="Close details"
+            onClick={() => setShowDetails(false)}
+            className="absolute inset-0 bg-black/50"
+          />
+          <div className="relative max-h-[88vh] w-full overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden rounded-t-2xl bg-white pb-[max(1.5rem,env(safe-area-inset-bottom))] text-slate-900 shadow-2xl">
+            <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4">
+              <h3 className="text-lg font-semibold">Your solar estimate</h3>
+              <button
+                type="button"
+                aria-label="Close details"
+                onClick={() => setShowDetails(false)}
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-700 hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
-            {/* 4 Investment & Subsidy Cards */}
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
-              {/* Card 1: Gross Cost */}
-              <div className="rounded-2xl border border-white bg-white p-4 shadow-lg shadow-slate-900/5 sm:p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
-                  <BadgeIndianRupee className="h-5 w-5" />
-                </div>
-                <p className="mt-4 text-xs font-semibold text-slate-500">
-                  System Cost (Gross)
-                </p>
-                <p className="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                  {formatINR(grossCost)}
-                </p>
-                <p className="mt-1 text-[10px] text-slate-400 hidden sm:block">
-                  Standard benchmark before subsidy
-                </p>
-              </div>
+            <div className="px-5 pt-4">
+              {detailSections.map((section) => (
+                <section key={section.title} className="mb-5">
+                  <h4 className="text-sm font-bold text-slate-900">{section.title}</h4>
+                  <dl className="mt-1 divide-y divide-slate-200 border-y border-slate-200">
+                    {section.rows.map(([label, value]) => (
+                      <div key={label} className="flex items-start justify-between gap-4 py-2.5 text-sm">
+                        <dt className="text-slate-600">{label}</dt>
+                        <dd className="shrink-0 text-right font-medium text-slate-900">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </section>
+              ))}
 
-              {/* Card 2: Total Subsidy Highlight */}
-              <div className="rounded-2xl border border-emerald-300 bg-emerald-50/90 p-4 shadow-lg shadow-slate-900/5 sm:p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <p className="mt-4 text-xs font-semibold text-emerald-900">
-                  Total Govt. Subsidy
-                </p>
-                <p className="mt-1 text-xl font-extrabold tracking-tight text-emerald-900 sm:text-2xl">
-                  {formatINR(subsidy.total)}
-                </p>
-                <p className="mt-1 text-[10px] font-semibold text-emerald-800 hidden sm:block">
-                  Central + State combined
-                </p>
-              </div>
-
-              {/* Card 3: Detailed Central & State Subsidy Breakdown */}
-              <div className="rounded-2xl border border-emerald-200 bg-white p-4 shadow-lg shadow-slate-900/5 sm:p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-                  <Building2 className="h-5 w-5" />
-                </div>
-                <p className="mt-4 text-xs font-semibold text-slate-500">
-                  Subsidy Breakup
-                </p>
-                <div className="mt-1 space-y-1">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600">Central (PM Surya Ghar):</span>
-                    <span className="font-bold text-slate-900">{formatINR(subsidy.central)}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600">State Govt.:</span>
-                    <span className="font-bold text-slate-900">{formatINR(subsidy.state)}</span>
-                  </div>
-                </div>
-                <p className="mt-2 text-[10px] text-slate-400 hidden sm:block">
-                  Direct Bank Transfer (DBT) scheme
-                </p>
-              </div>
-
-              {/* Card 4: Net Cost */}
-              <div className="rounded-2xl border-2 border-emerald-600 bg-emerald-950 p-4 text-white shadow-lg shadow-emerald-950/20 sm:p-5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-800 text-emerald-200">
-                  <Zap className="h-5 w-5" />
-                </div>
-                <p className="mt-4 text-xs font-semibold text-emerald-200">
-                  Effective Net Cost*
-                </p>
-                <p className="mt-1 text-xl font-extrabold tracking-tight text-white sm:text-2xl">
-                  {formatINR(netEstimatedCost)}
-                </p>
-                <p className="mt-1 text-[10px] text-emerald-200/80 hidden sm:block">
-                  Your actual out-of-pocket cost
-                </p>
-              </div>
-            </div>
-
-            {/* Environmental Benefit Banner */}
-            <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-900/10 bg-[#123A2C] p-4 text-white shadow-lg shadow-slate-900/5">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-400/20 text-emerald-300">
-                <Leaf className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold">
-                  Zero Emission Clean Energy
-                </p>
-                <p className="mt-0.5 text-xs text-emerald-100/80">
-                  Reduces carbon footprint by{' '}
-                  <span className="font-bold text-white">
-                    {annualCO2Tons} tonnes of CO₂ per year
-                  </span>
-                  , equivalent to planting ~{(Number(annualCO2Tons) * 45).toFixed(0)} trees.
-                </p>
-              </div>
-              <CheckCircle2 className="ml-auto hidden h-5 w-5 shrink-0 text-emerald-300 sm:block" />
-            </div>
-
-            {/* Minimal Benchmark for Phone View only */}
-            <div className="mt-4 flex sm:hidden items-start gap-2.5 rounded-xl border border-slate-200 bg-white/70 p-3 text-slate-600">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-              <p className="text-[11px] leading-relaxed">
-                <strong>Benchmark Specifications:</strong> 1 kW system produces 5 to 6 units/day; rooftop area estimated at 80 sq. ft. (8 × 10 ft) per kW; adjustable electricity tariff. Subsidies follow PM Surya Ghar Muft Bijli Yojana (Central) plus applicable State Government grants. Final system capacity and savings will be confirmed during the on-site technical inspection.
+              <p className="text-xs leading-5 text-slate-500">
+                These are approximate numbers. Our engineer will visit your home and confirm the final size,
+                cost and savings.
               </p>
             </div>
           </div>
         </div>
+      )}
+    </div>
+  );
+
+  return (
+    <section
+      id="calculator"
+      className="overflow-hidden bg-white py-8 sm:py-12 lg:py-20"
+    >
+      <div className="mx-auto w-full max-w-[1600px] px-3.5 sm:px-7 lg:px-12">
+        {mobileView}
+        {desktopView}
       </div>
     </section>
   );

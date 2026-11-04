@@ -23,13 +23,13 @@ interface NavbarProps {
 
 const navLinks = [
   { name: 'Home', href: '#home' },
-  { name: 'Products', href: '#products' },
+  { name: 'Projects', href: '#projects' },
+  // { name: 'Products', href: '#products' },
   { name: 'Savings', href: '#calculator' },
   { name: 'Benefits', href: '#benefits' },
-  { name: 'Projects', href: '#projects' },
   { name: 'About', href: '#about' },
-  { name: 'Reviews', href: '#testimonials' },
-  { name: 'FAQ', href: '#faq' },
+  // { name: 'Reviews', href: '#testimonials' },
+  // { name: 'FAQ', href: '#faq' },
   { name: 'Contact', href: '#contact' },
 ];
 

@@ -38,6 +38,7 @@ export default function HeroSection({
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Automatically transition to the next image one by one every 4.5 seconds
   useEffect(() => {
@@ -53,16 +54,57 @@ export default function HeroSection({
     value: string
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errorMessage) setErrorMessage(null);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErrorMessage(null);
+
+    // Validate 10-digit Indian mobile number
+    if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
+      setErrorMessage('Please enter a valid 10-digit Indian mobile number.');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const response = await fetch('/api/consultation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit inquiry. Please try again.');
+      }
+
       setIsSubmitted(true);
-    }, 800);
+    } catch (err: unknown) {
+      console.error('Consultation submission error:', err);
+      const message = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.';
+      setErrorMessage(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      name: '',
+      mobile: '',
+      email: '',
+      city: '',
+      monthlyBill: '₹2,000 - ₹5,000',
+      propertyType: 'Residential Independent House / Villa',
+    });
+    setErrorMessage(null);
+    setIsSubmitted(false);
   };
 
   const inputClass =
@@ -210,14 +252,14 @@ export default function HeroSection({
                       Thank you, {formData.name}!
                     </h3>
 
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                      This demo has simulated your submission.
-                      Backend yet to be connected to receive real inquiries.
+                    <p className="mt-2.5 text-sm leading-6 text-slate-600">
+                      Your solar consultation request has been recorded. Our certified solar engineer will contact you shortly at{' '}
+                      <span className="font-semibold text-slate-800">+91 {formData.mobile}</span>.
                     </p>
 
                     <button
                       type="button"
-                      onClick={() => setIsSubmitted(false)}
+                      onClick={handleReset}
                       className="mt-5 text-sm font-semibold text-emerald-800 hover:underline"
                     >
                       Submit another inquiry
@@ -228,6 +270,14 @@ export default function HeroSection({
                     onSubmit={handleSubmit}
                     className="mt-5 space-y-4"
                   >
+                    {errorMessage && (
+                      <div
+                        role="alert"
+                        className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 leading-relaxed"
+                      >
+                        {errorMessage}
+                      </div>
+                    )}
                     <div>
                       <label htmlFor="hero-name" className={labelClass}>
                         Full name *
@@ -385,7 +435,24 @@ export default function HeroSection({
         </div>
 
         {/* Minimal brand strip */}
+        {/* Brand strip */}
         <div className="flex flex-col gap-4 border-b border-slate-200 py-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm font-medium text-slate-700 sm:text-base">
+            Leading solar panel supplier &amp; installer in Lucknow for homes, businesses and farms.
+          </p>
+
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+            {[
+              'PM Surya Ghar subsidy support',
+              'Free site visit',
+              'Free consultation',
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>

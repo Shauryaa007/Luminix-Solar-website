@@ -17,7 +17,14 @@ import {
   CompletedProject,
 } from '@/data/solarData';
 
-export default function CompletedProjectsSection() {
+interface CompletedProjectsSectionProps {
+  /** Optional: pass the same handler HeroSection uses to show "Get a similar system" in the popup. */
+  onOpenConsultation?: (prefill?: string) => void;
+}
+
+export default function CompletedProjectsSection({
+  onOpenConsultation,
+}: CompletedProjectsSectionProps = {}) {
   const [selectedGalleryProject, setSelectedGalleryProject] =
     useState<CompletedProject | null>(null);
 
@@ -214,7 +221,7 @@ export default function CompletedProjectsSection() {
   return (
     <section
       id="projects"
-      className="relative overflow-hidden bg-white py-20 sm:py-24 lg:py-28"
+      className="relative overflow-hidden bg-[#F5F8F3] py-20 sm:py-24 lg:py-28"
     >
       <div className="pointer-events-none absolute -right-40 top-20 h-96 w-96 rounded-full bg-emerald-100/50 blur-3xl" />
       <div className="pointer-events-none absolute -left-40 top-[45%] h-96 w-96 rounded-full bg-teal-50 blur-3xl" />
@@ -437,170 +444,151 @@ export default function CompletedProjectsSection() {
             ))}
           </div>
         </div>
-
-        {/* Closing CTA */}
-        <div className="relative mt-16 overflow-hidden rounded-3xl bg-[#103c2c] p-7 text-white sm:p-10 lg:mt-20 lg:p-12">
-          <div className="pointer-events-none absolute -right-10 -top-24 h-64 w-64 rounded-full border border-white/10" />
-          <div className="pointer-events-none absolute -right-2 -top-16 h-48 w-48 rounded-full border border-white/10" />
-
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-xl">
-              <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-emerald-200">
-                <Sun className="h-4 w-4" />
-                Make the switch
-              </p>
-              <h3 className="text-2xl font-bold leading-tight sm:text-3xl">
-                Your roof has potential.
-                <span className="block text-emerald-200">
-                  Let’s explore it.
-                </span>
-              </h3>
-              <p className="mt-3 text-sm leading-6 text-emerald-100/80">
-                Find a solar solution tailored to your property and
-                electricity requirements.
-              </p>
-            </div>
-
-            <a
-              href="#calculator"
-              className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-emerald-900 transition hover:bg-emerald-50 focus:outline-none focus:ring-4 focus:ring-white/20"
-            >
-              Estimate my savings
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </a>
-          </div>
-        </div>
       </div>
 
-      {/* Project details modal */}
+      {/* Project details — big bottom sheet on mobile, centered dialog on larger screens */}
       {selectedGalleryProject && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/75 p-4 backdrop-blur-sm"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setSelectedGalleryProject(null);
-            }
-          }}
+          className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="project-modal-title"
         >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="project-modal-title"
-            className="my-auto w-full max-w-2xl overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl"
-          >
-            <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-slate-100">
+          <style>{`
+            @keyframes project-sheet-up {
+              from { transform: translateY(100%); }
+              to { transform: none; }
+            }
+            @keyframes project-dialog-in {
+              from { opacity: 0; transform: translateY(12px) scale(0.98); }
+              to { opacity: 1; transform: none; }
+            }
+            .project-sheet-in { animation: project-sheet-up 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+            @media (min-width: 640px) {
+              .project-sheet-in { animation: project-dialog-in 200ms ease-out both; }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .project-sheet-in { animation: none; }
+            }
+          `}</style>
+
+          {/* Backdrop */}
+          <button
+            type="button"
+            aria-label="Close project details"
+            onClick={() => setSelectedGalleryProject(null)}
+            className="absolute inset-0 cursor-default bg-black/60"
+          />
+
+          <div className="project-sheet-in relative flex h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:h-[84vh] sm:max-h-[720px] sm:max-w-5xl sm:flex-row sm:rounded-3xl">
+            {/* Image */}
+            <div className="relative h-60 w-full shrink-0 bg-slate-100 sm:h-auto sm:w-[48%]">
               <Image
                 src={selectedGalleryProject.image}
                 alt={selectedGalleryProject.title}
                 fill
                 priority
                 className="object-cover"
-                sizes="(max-width: 672px) 100vw, 672px"
+                sizes="(max-width: 640px) 100vw, 520px"
               />
 
               <button
                 type="button"
+                autoFocus
                 onClick={() => setSelectedGalleryProject(null)}
                 aria-label="Close project details"
-                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-black/50 text-white backdrop-blur-md transition hover:bg-black/75 focus:outline-none focus:ring-4 focus:ring-white/30"
+                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-700 shadow-md transition hover:bg-slate-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="p-5 sm:p-7">
-              {/* Category & Installation Date bar — directly below the image */}
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${
-                    selectedGalleryProject.category === 'Residential'
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80'
-                      : 'bg-teal-50 text-teal-800 border border-teal-200/80'
-                  }`}
-                >
+            {/* Details */}
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:p-8 [&::-webkit-scrollbar]:hidden">
+                <p className="text-sm font-medium text-emerald-700">
                   {selectedGalleryProject.category}
-                </span>
+                </p>
 
-                <span className="text-xs font-medium text-slate-500">
-                  Completed · {selectedGalleryProject.installationDate}
-                </span>
-              </div>
-
-              {/* Title & Customer Name & Location */}
-              <div className="mt-4">
                 <h3
                   id="project-modal-title"
-                  className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl"
+                  className="mt-1 text-2xl font-semibold leading-tight text-slate-900 sm:text-3xl"
                 >
                   {selectedGalleryProject.title}
                 </h3>
 
-                <p className="mt-1.5 text-sm text-slate-600 font-medium">
-                  <span className="text-emerald-800 font-bold">Installed for: </span>
-                  {selectedGalleryProject.customerName}
-                </p>
-
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm text-slate-500">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+                <p className="mt-3 flex items-center gap-1.5 text-sm text-slate-500">
+                  <MapPin className="h-4 w-4 shrink-0" />
                   <span>{selectedGalleryProject.location}</span>
                 </p>
-              </div>
 
-              {/* Metric Cards (Plant Capacity highlighted, Annual Generation optional) */}
-              <div
-                className={`mt-4 sm:mt-5 grid gap-2.5 sm:gap-3 ${
-                  selectedGalleryProject.annualGeneration
-                    ? 'grid-cols-2'
-                    : 'grid-cols-1'
-                }`}
-              >
-                {/* Plant Capacity Metric Card */}
-                <div className="relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 to-emerald-100/40 p-3 sm:p-4 shadow-sm">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-800 truncate">
-                      Plant Capacity
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <p className="text-xs text-slate-500">Capacity</p>
+                    <p className="mt-1 text-xl font-semibold text-slate-900">
+                      {selectedGalleryProject.capacity}
                     </p>
-                    <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
-                      <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    </div>
                   </div>
-                  <p className="mt-1.5 sm:mt-2 text-sm sm:text-lg font-bold leading-snug tracking-tight text-emerald-950 sm:text-2xl">
-                    {selectedGalleryProject.capacity}
-                  </p>
+
+                  {selectedGalleryProject.annualGeneration && (
+                    <div className="rounded-xl bg-slate-50 p-4">
+                      <p className="text-xs text-slate-500">Yearly generation</p>
+                      <p className="mt-1 text-xl font-semibold text-slate-900">
+                        {selectedGalleryProject.annualGeneration}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <p className="text-xs text-slate-500">Installed for</p>
+                    <p className="mt-1 text-base font-semibold text-slate-900">
+                      {selectedGalleryProject.customerName}
+                    </p>
+                  </div>
+
+                  {selectedGalleryProject.installationDate && (
+                    <div className="rounded-xl bg-slate-50 p-4">
+                      <p className="text-xs text-slate-500">Completed</p>
+                      <p className="mt-1 text-base font-semibold text-slate-900">
+                        {selectedGalleryProject.installationDate}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
-                {/* Annual Generation Metric Card (Optional, if verified) */}
-                {selectedGalleryProject.annualGeneration && (
-                  <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/80 p-3 sm:p-4">
-                    <div className="flex items-center justify-between gap-1">
-                      <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-600 truncate">
-                        <span className="sm:hidden">Annual Gen.</span>
-                        <span className="hidden sm:inline">Annual Generation</span>
-                      </p>
-                      <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-lg bg-slate-200 text-slate-700">
-                        <Sun className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      </div>
-                    </div>
-                    <p className="mt-1.5 sm:mt-2 text-sm sm:text-lg font-bold leading-snug tracking-tight text-slate-900 sm:text-2xl">
-                      {selectedGalleryProject.annualGeneration}
-                    </p>
-                  </div>
+                {selectedGalleryProject.description && (
+                  <p className="mt-6 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">
+                    {selectedGalleryProject.description}
+                  </p>
                 )}
               </div>
 
-              {/* Project Description (one short sentence) */}
-              <p className="mt-5 text-sm leading-6 text-slate-600 border-t border-slate-100 pt-4">
-                {selectedGalleryProject.description}
-              </p>
-
-              <div className="mt-6 flex justify-end">
+              {/* Actions */}
+              <div className="flex shrink-0 items-center gap-3 border-t border-slate-200 px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-8 sm:py-5">
                 <button
                   type="button"
                   onClick={() => setSelectedGalleryProject(null)}
-                  className="rounded-xl bg-emerald-800 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-900 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+                  className="inline-flex min-h-12 flex-1 items-center justify-center rounded-lg border border-slate-300 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 sm:flex-none"
                 >
-                  Close project
+                  Close
                 </button>
+
+                {onOpenConsultation && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const title = selectedGalleryProject.title;
+                      setSelectedGalleryProject(null);
+                      onOpenConsultation(
+                        `I'd like a solar system like "${title}"`
+                      );
+                    }}
+                    className="inline-flex min-h-12 flex-[2] items-center justify-center gap-2 rounded-lg bg-emerald-800 px-5 text-sm font-semibold text-white transition hover:bg-emerald-900 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200 sm:flex-none"
+                  >
+                    Get a similar system
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

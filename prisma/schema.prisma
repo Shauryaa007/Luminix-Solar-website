@@ -1,0 +1,30 @@
+// Prisma Schema for Luminix Solar
+// PostgreSQL database integration (Supabase, Neon, or self-hosted PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ConsultationLead {
+  id           String   @id @default(cuid())
+  name         String
+  mobile       String
+  email        String?
+  city         String?
+  monthlyBill  String
+  propertyType String
+  source       String   @default("hero_section")
+  status       String   @default("NEW") // NEW, CONTACTED, QUALIFIED, CONVERTED, ARCHIVED
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([mobile])
+  @@index([createdAt])
+  @@map("consultation_leads")
+}
