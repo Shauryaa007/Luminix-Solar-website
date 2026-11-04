@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { appendLeadToGoogleSheet } from '@/lib/googleSheets';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, mobile, email, city, monthlyBill, propertyType, source } = body;
+    const { name, mobile, email, city, monthlyBill, propertyType, requirement, source } = body;
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -44,9 +45,22 @@ export async function POST(request: NextRequest) {
       city: typeof city === 'string' && city.trim() ? city.trim() : null,
       monthlyBill: monthlyBill.trim(),
       propertyType: propertyType.trim(),
+      requirement: typeof requirement === 'string' && requirement.trim() ? requirement.trim() : null,
       source: typeof source === 'string' && source.trim() ? source.trim() : 'hero_section',
       status: 'NEW',
     };
+
+    // 1. Sync to Google Sheets
+    const sheetResult = await appendLeadToGoogleSheet({
+      name: leadData.name,
+      mobile: leadData.mobile,
+      email: leadData.email,
+      city: leadData.city,
+      monthlyBill: leadData.monthlyBill,
+      propertyType: leadData.propertyType,
+      requirement: leadData.requirement,
+      source: leadData.source,
+    });
 
     const databaseUrl = process.env.DATABASE_URL || '';
     const isPlaceholderUrl =
@@ -54,46 +68,54 @@ export async function POST(request: NextRequest) {
       databaseUrl.includes('YOUR_PASSWORD') ||
       databaseUrl.includes('USER:PASSWORD');
 
-    // If database connection is configured, save directly to PostgreSQL
+    // 2. If PostgreSQL database connection is configured, also persist with Prisma
     if (!isPlaceholderUrl) {
       try {
         const savedLead = await prisma.consultationLead.create({
-          data: leadData,
+          data: {
+            name: leadData.name,
+            mobile: leadData.mobile,
+            email: leadData.email,
+            city: leadData.city,
+            monthlyBill: leadData.monthlyBill,
+            propertyType: leadData.propertyType,
+            source: leadData.source,
+            status: leadData.status,
+          },
         });
 
         return NextResponse.json(
           {
             success: true,
             lead: savedLead,
+            sheetSynced: sheetResult.success,
             message: 'Your solar consultation request has been received.',
           },
           { status: 201 }
         );
       } catch (dbError) {
         console.error('Database connection error in /api/consultation:', dbError);
-        // Fallback for development if database is unreachable
         return NextResponse.json(
           {
             success: true,
             lead: { id: `lead_${Date.now()}`, ...leadData, createdAt: new Date() },
+            sheetSynced: sheetResult.success,
             isFallback: true,
-            message:
-              'Inquiry received. Note: Database connection failed; please check your DATABASE_URL in .env.local.',
+            message: 'Inquiry received and processed.',
           },
           { status: 200 }
         );
       }
     }
 
-    // Graceful response in development when DATABASE_URL is still placeholder
-    console.log('[Dev Mode] Consultation lead received without database:', leadData);
+    // Graceful response in development / when PostgreSQL is not configured
     return NextResponse.json(
       {
         success: true,
         lead: { id: `lead_dev_${Date.now()}`, ...leadData, createdAt: new Date() },
+        sheetSynced: sheetResult.success,
         isFallback: true,
-        message:
-          'Consultation inquiry received! (Development mode: add your real DATABASE_URL in .env.local to persist into PostgreSQL)',
+        message: 'Your solar consultation request has been received.',
       },
       { status: 200 }
     );
@@ -107,9 +129,16 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const isSheetConfigured = Boolean(
+    process.env.GOOGLE_SHEET_ID &&
+    process.env.GOOGLE_CLIENT_EMAIL &&
+    process.env.GOOGLE_PRIVATE_KEY
+  );
+
   return NextResponse.json({
     status: 'online',
     service: 'Luminix Solar Consultation API',
+    googleSheetsConnected: isSheetConfigured,
     timestamp: new Date().toISOString(),
   });
 }
