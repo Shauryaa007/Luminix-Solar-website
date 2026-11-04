@@ -22,7 +22,7 @@ const LEGAL_LINKS = [
 ];
 
 export default function Footer() {
-  const year = new Date().getFullYear();
+  const year = 2026;
 
   return (
     <footer className="w-full bg-[#102E24] text-white">

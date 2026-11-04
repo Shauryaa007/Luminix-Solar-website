@@ -64,7 +64,7 @@ export const COMPANY_INFO = {
   tagline: "Clean Energy for a Brighter Tomorrow",
   logo: "/images/logo.png",
   establishedYear: 2024,
-  yearsOfExperience: (new Date().getFullYear() - 2024).toString(),
+  yearsOfExperience: "2+",
   parentCompany: "Luminix Clean Energy Holdings Group",
   gstin: "09ccvpv0642n1zm",
   mnreVendorId: "MNRE/RTS/2023/8842",

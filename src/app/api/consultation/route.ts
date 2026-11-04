@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
 import { appendLeadToGoogleSheet } from '@/lib/googleSheets';
 
 export async function POST(request: NextRequest) {
@@ -47,77 +46,26 @@ export async function POST(request: NextRequest) {
       propertyType: propertyType.trim(),
       requirement: typeof requirement === 'string' && requirement.trim() ? requirement.trim() : null,
       source: typeof source === 'string' && source.trim() ? source.trim() : 'hero_section',
-      status: 'NEW',
     };
 
-    // 1. Sync to Google Sheets
-    const sheetResult = await appendLeadToGoogleSheet({
-      name: leadData.name,
-      mobile: leadData.mobile,
-      email: leadData.email,
-      city: leadData.city,
-      monthlyBill: leadData.monthlyBill,
-      propertyType: leadData.propertyType,
-      requirement: leadData.requirement,
-      source: leadData.source,
-    });
+    // Append lead to Google Sheets
+    const sheetResult = await appendLeadToGoogleSheet(leadData);
 
-    const databaseUrl = process.env.DATABASE_URL || '';
-    const isPlaceholderUrl =
-      !databaseUrl ||
-      databaseUrl.includes('YOUR_PASSWORD') ||
-      databaseUrl.includes('USER:PASSWORD');
-
-    // 2. If PostgreSQL database connection is configured, also persist with Prisma
-    if (!isPlaceholderUrl) {
-      try {
-        const savedLead = await prisma.consultationLead.create({
-          data: {
-            name: leadData.name,
-            mobile: leadData.mobile,
-            email: leadData.email,
-            city: leadData.city,
-            monthlyBill: leadData.monthlyBill,
-            propertyType: leadData.propertyType,
-            source: leadData.source,
-            status: leadData.status,
-          },
-        });
-
-        return NextResponse.json(
-          {
-            success: true,
-            lead: savedLead,
-            sheetSynced: sheetResult.success,
-            message: 'Your solar consultation request has been received.',
-          },
-          { status: 201 }
-        );
-      } catch (dbError) {
-        console.error('Database connection error in /api/consultation:', dbError);
-        return NextResponse.json(
-          {
-            success: true,
-            lead: { id: `lead_${Date.now()}`, ...leadData, createdAt: new Date() },
-            sheetSynced: sheetResult.success,
-            isFallback: true,
-            message: 'Inquiry received and processed.',
-          },
-          { status: 200 }
-        );
-      }
+    if (!sheetResult.success && !sheetResult.skipped) {
+      console.error('[Consultation API] Google Sheets error:', sheetResult.error);
     }
 
-    // Graceful response in development / when PostgreSQL is not configured
     return NextResponse.json(
       {
         success: true,
-        lead: { id: `lead_dev_${Date.now()}`, ...leadData, createdAt: new Date() },
-        sheetSynced: sheetResult.success,
-        isFallback: true,
         message: 'Your solar consultation request has been received.',
+        lead: {
+          id: `lead_${Date.now()}`,
+          ...leadData,
+          createdAt: new Date().toISOString(),
+        },
       },
-      { status: 200 }
+      { status: 201 }
     );
   } catch (error) {
     console.error('Error handling /api/consultation POST:', error);
