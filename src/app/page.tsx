@@ -68,6 +68,8 @@ export default function Home() {
         {/* Section 1/5/7: Full Consultation & Contact Details */}
         <ContactSection />
 
+        <FaqSection/>
+
         <Footer />
         {/* Section Coming Soon - temporary */}
         {/* <h2 className="mx-4 my-8 max-w-5xl rounded-2xl border border-slate-200 bg-slate-50/80 p-6 text-center text-2xl font-bold text-slate-800 shadow-sm md:mx-auto md:text-3xl">
