@@ -1,670 +1,494 @@
-
 'use client';
 
-import { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
-  Sun,
-  BatteryCharging,
-  Building2,
-  Droplet,
-  Check,
   ArrowRight,
-  ArrowLeft,
-  Info,
-  ShieldCheck,
-  X,
-  ChevronRight,
-  ChevronLeft,
-  MoveRight,
+  Battery,
+  Unplug,
+  Zap,
 } from 'lucide-react';
-import { PRODUCTS_DATA, Product } from '@/data/solarData';
 
 interface ProductsSectionProps {
-  onSelectProductForConsultation: (productName: string) => void;
+  onOpenConsultation?: (prefill?: string) => void;
 }
 
-const categories = [
-  { id: 'all', label: 'All products' },
-  { id: 'residential', label: 'Rooftop solar' },
-  { id: 'inverter-battery', label: 'Inverters & storage' },
-  { id: 'commercial', label: 'Commercial solar' },
-  { id: 'water-pump', label: 'Solar water pumps' },
+// costValue / subsidyValue are numbers used only to draw the subsidy bar.
+// For 1 kW the upper end of the cost range (₹70,000) is used, which matches
+// the ₹25,000 contribution shown.
+const PRICING = [
+  {
+    size: '1 kW',
+    price: '₹25,000',
+    cost: '₹65,000–70,000',
+    subsidy: '₹45,000',
+    costValue: 70000,
+    subsidyValue: 45000,
+  },
+  {
+    size: '2 kW',
+    price: '₹35,000',
+    cost: '₹1,25,000',
+    subsidy: '₹90,000',
+    costValue: 125000,
+    subsidyValue: 90000,
+    popular: true,
+  },
+  {
+    size: '3 kW',
+    price: '₹72,000',
+    cost: '₹1,80,000',
+    subsidy: '₹1,08,000',
+    costValue: 180000,
+    subsidyValue: 108000,
+  },
 ];
 
-const categoryIcons: Record<string, typeof Sun> = {
-  residential: Sun,
-  'inverter-battery': BatteryCharging,
-  commercial: Building2,
-  'water-pump': Droplet,
-};
+const PRODUCTS = [
+  {
+    id: 'on-grid',
+    name: 'On-Grid',
+    line: 'Reduce electricity bills with grid-connected solar.',
+    image: '/images/residential-solar-roof.jpg',
+    icon: Zap,
+  },
+  {
+    id: 'off-grid',
+    name: 'Off-Grid',
+    line: 'Independent solar power with battery storage.',
+    image: '/images/commercial-solar.jpg',
+    icon: Unplug,
+  },
+  {
+    id: 'hybrid',
+    name: 'Hybrid',
+    line: 'Grid connectivity with battery backup.',
+    image: '/images/hero-solar.jpg',
+    icon: Battery,
+  },
+];
+
+const POPULAR_INDEX = Math.max(
+  0,
+  PRICING.findIndex((p) => p.popular)
+);
+
+/**
+ * Mobile carousel behaviour shared by both card rows:
+ * one card at a time, auto-slides right to left, loops seamlessly
+ * (the row must end with a duplicate of its first card), pauses on touch.
+ * Below `breakpoint` px it runs; above it the row is a normal grid.
+ */
+function useAutoSlide(
+  count: number,
+  breakpoint: number,
+  intervalMs: number,
+  startIndex = 0
+) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(startIndex);
+  const pausedRef = useRef(false);
+  const resumeTimerRef = useRef<number | undefined>(undefined);
+  const settleTimerRef = useRef<number | undefined>(undefined);
+
+  // Open on the starting card (mobile only)
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || startIndex === 0 || window.innerWidth >= breakpoint) return;
+    el.scrollTo({ left: startIndex * el.clientWidth });
+  }, [startIndex, breakpoint]);
+
+  // Auto-slide
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    if (reduceMotion) return;
+
+    const interval = window.setInterval(() => {
+      const el = ref.current;
+      if (!el || pausedRef.current || window.innerWidth >= breakpoint) return;
+      const width = el.clientWidth;
+      if (width === 0) return;
+      const index = Math.round(el.scrollLeft / width);
+      el.scrollTo({ left: (index + 1) * width, behavior: 'smooth' });
+    }, intervalMs);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(resumeTimerRef.current);
+      window.clearTimeout(settleTimerRef.current);
+    };
+  }, [breakpoint, intervalMs]);
+
+  const onScroll = () => {
+    const el = ref.current;
+    if (!el || el.clientWidth === 0) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    setActive(index % count);
+
+    // Once settled on the duplicate first card, jump back to the real one.
+    // They look identical, so the loop is seamless.
+    window.clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = window.setTimeout(() => {
+      const node = ref.current;
+      if (!node || node.clientWidth === 0) return;
+      if (Math.round(node.scrollLeft / node.clientWidth) >= count) {
+        node.scrollTo({ left: 0, behavior: 'auto' });
+      }
+    }, 150);
+  };
+
+  const pause = () => {
+    window.clearTimeout(resumeTimerRef.current);
+    pausedRef.current = true;
+  };
+
+  const resume = () => {
+    window.clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = window.setTimeout(() => {
+      pausedRef.current = false;
+    }, 2500);
+  };
+
+  return {
+    ref,
+    active,
+    bind: {
+      onScroll,
+      onTouchStart: pause,
+      onTouchEnd: resume,
+      onTouchCancel: resume,
+    },
+  };
+}
 
 export default function ProductsSection({
-  onSelectProductForConsultation,
+  onOpenConsultation,
 }: ProductsSectionProps) {
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
-  const [showAllProducts, setShowAllProducts] = useState(false);
+  // Pricing row: grid from 768px up
+  const pricing = useAutoSlide(PRICING.length, 768, 3500, POPULAR_INDEX);
+  // Product row: grid from 640px up
+  const products = useAutoSlide(PRODUCTS.length, 640, 4000);
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const startX = useRef(0);
-  const startScrollLeft = useRef(0);
-  const didDrag = useRef(false);
-
-  const filteredProducts =
-    activeCategory === 'all'
-      ? PRODUCTS_DATA
-      : PRODUCTS_DATA.filter(
-          (product) => product.category === activeCategory
-        );
-
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    carouselRef.current?.scrollBy({
-      left: direction === 'right' ? 320 : -320,
-      behavior: 'smooth',
-    });
-  };
-
-  const startDragging = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (event.button !== 0) return;
-
-    isDragging.current = true;
-    didDrag.current = false;
-    startX.current = event.clientX;
-    startScrollLeft.current = event.currentTarget.scrollLeft;
-  };
-
-  const dragCarousel = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDragging.current || !carouselRef.current) return;
-
-    const distance = event.clientX - startX.current;
-
-    if (Math.abs(distance) > 5) {
-      didDrag.current = true;
-    }
-
-    if (didDrag.current) {
-      event.preventDefault();
-      carouselRef.current.scrollLeft = startScrollLeft.current - distance;
-    }
-  };
-
-  const stopDragging = () => {
-    isDragging.current = false;
-
-    // Keep didDrag true briefly so a drag doesn't activate a card.
-    if (didDrag.current) {
-      window.setTimeout(() => {
-        didDrag.current = false;
-      }, 0);
-    }
-  };
-
-  const openProductDetails = (product: Product) => {
-    if (didDrag.current) return;
-    setSelectedProduct(product);
-  };
-
-  const selectCategory = (categoryId: string) => {
-    setActiveCategory(categoryId);
-    setShowAllProducts(false);
-
-    if (carouselRef.current) {
-      carouselRef.current.scrollTo({
-        left: 0,
+  const handleConsultation = (prefill?: string) => {
+    if (onOpenConsultation) {
+      onOpenConsultation(prefill);
+    } else {
+      document.getElementById('home')?.scrollIntoView({
         behavior: 'smooth',
       });
     }
   };
 
-  const showCatalogue = () => {
-    setActiveCategory('all');
-    setShowAllProducts(true);
-  };
+  const renderPricingCard = (
+    item: (typeof PRICING)[number],
+    isClone = false
+  ) => {
+    const featured = !!item.popular;
+    const percent = Math.round((item.subsidyValue / item.costValue) * 100);
 
-  return (
-    <section
-      id="products"
-      className="bg-[#FAFCFA] py-12 sm:py-16 lg:py-20 lg:mt-10"
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-        {/* Section heading */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className="mb-3 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-800">
-              <span className="h-px w-6 bg-emerald-700" />
-              Our solar solutions
-            </div>
-
-            <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-              Find your perfect
-              <span className="text-emerald-800"> solar solution.</span>
-            </h2>
-
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-500">
-              Explore solar products for homes, businesses and industry.
-            </p>
-          </div>
-
-          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-100 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-900">
-            <ShieldCheck className="h-4 w-4 text-emerald-700" />
-            Expert product guidance
-          </div>
-        </div>
-
-        {/* Category filters */}
-        <div className="mt-7 flex gap-2 overflow-x-auto pb-2">
-          {categories.map((category) => {
-            const Icon = categoryIcons[category.id];
-            const active = activeCategory === category.id;
-
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => selectCategory(category.id)}
-                aria-pressed={active}
-                className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition-all duration-200 sm:text-sm ${
-                  active
-                    ? 'border-emerald-800 bg-emerald-800 text-white shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:bg-emerald-50/60 hover:text-emerald-900'
+    return (
+      <div
+        key={isClone ? `${item.size}-clone` : item.size}
+        aria-hidden={isClone || undefined}
+        className={`w-full shrink-0 snap-center snap-always px-1 py-2 md:w-auto md:p-0 ${
+          isClone ? 'md:hidden' : ''
+        }`}
+      >
+        <div
+          className={`flex h-full flex-col rounded-3xl p-6 sm:p-7 ${
+            featured
+              ? 'bg-[#174b35] text-white shadow-[0_24px_60px_rgba(23,75,53,0.30)] md:-my-5 md:py-10'
+              : 'border border-slate-200 bg-white text-[#102E24] shadow-[0_4px_24px_rgba(16,46,36,0.05)]'
+          }`}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p
+                className={`text-xs ${
+                  featured ? 'text-emerald-100/70' : 'text-slate-500'
                 }`}
               >
-                {Icon && <Icon className="h-4 w-4" />}
-                {category.label}
-              </button>
-            );
-          })}
-        </div>
+                Rooftop solar system
+              </p>
+              <h3 className="mt-1 text-3xl font-semibold tracking-tight">
+                {item.size}
+              </h3>
+            </div>
 
-        {/* Catalogue heading and controls */}
-        <div className="mt-5 flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-slate-900">
-              {showAllProducts ? 'All products' : 'Explore our range'}
-            </p>
-            <p className="mt-0.5 text-xs text-slate-500">
-              {filteredProducts.length} products
-              {!showAllProducts && ' · Swipe or drag to explore'}
-            </p>
+            {featured && (
+              <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-emerald-50">
+                Most popular
+              </span>
+            )}
           </div>
 
-          {!showAllProducts && (
-            <div className="hidden items-center gap-2 sm:flex">
-              <button
-                type="button"
-                onClick={() => scrollCarousel('left')}
-                aria-label="Scroll products left"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => scrollCarousel('right')}
-                aria-label="Scroll products right"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {showAllProducts && (
-            <button
-              type="button"
-              onClick={() => setShowAllProducts(false)}
-              className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 sm:text-sm"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to carousel
-            </button>
-          )}
-        </div>
-
-        {/* Products carousel */}
-        {!showAllProducts && filteredProducts.length > 0 && (
-          <div className="relative mt-4">
-            {/* Subtle edge fade */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute bottom-0 right-0 top-0 z-10 hidden w-10 bg-gradient-to-l from-[#FAFCFA] to-transparent sm:block"
-            />
-
-            <div
-              ref={carouselRef}
-              onMouseDown={startDragging}
-              onMouseMove={dragCarousel}
-              onMouseUp={stopDragging}
-              onMouseLeave={stopDragging}
-              onClickCapture={(event) => {
-                if (didDrag.current) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }
-              }}
-              className={`flex gap-4 overflow-x-auto overscroll-x-contain pb-4 pt-1 [scrollbar-color:#A7CDB8_transparent] [scrollbar-width:thin] ${
-                isDragging.current ? 'cursor-grabbing select-none' : 'cursor-grab'
+          {/* Price */}
+          <div className="mt-6">
+            <p
+              className={`text-xs ${
+                featured ? 'text-emerald-100/70' : 'text-slate-500'
               }`}
-              style={{ scrollSnapType: 'x mandatory' }}
-              aria-label="Solar products carousel"
             >
-              {filteredProducts.map((product) => (
-                <article
-                  key={product.id}
-                  className="group w-[255px] shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-[0_16px_35px_-22px_rgba(6,78,59,0.32)] sm:w-[275px]"
-                >
-                  {/* Product image */}
-                  <button
-                    type="button"
-                    onClick={() => openProductDetails(product)}
-                    aria-label={`View details for ${product.name}`}
-                    className="relative block h-40 w-full overflow-hidden bg-[#F0F5F0] text-left sm:h-44"
-                  >
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      draggable={false}
-                      sizes="275px"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent" />
-
-                    <span className="absolute left-3 top-3 max-w-[65%] truncate rounded-full border border-white/70 bg-white/95 px-3 py-1.5 text-[10px] font-semibold text-slate-700 backdrop-blur">
-                      {product.categoryLabel}
-                    </span>
-
-                    {product.subsidyEligible && (
-                      <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-800 px-2.5 py-1.5 text-[10px] font-semibold text-white shadow-sm">
-                        <Check className="h-3 w-3" />
-                        Subsidy eligible
-                      </span>
-                    )}
-
-                    <span className="absolute bottom-3 left-3 rounded-lg border border-white/60 bg-white/95 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-900 backdrop-blur">
-                      {product.efficiency}
-                    </span>
-
-                    <span className="absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white text-emerald-900 shadow-sm transition-transform duration-200 group-hover:translate-x-0.5">
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
-                  </button>
-
-                  {/* Compact information */}
-                  <div className="p-4">
-                    <h3 className="truncate text-base font-bold tracking-tight text-slate-900 transition-colors group-hover:text-emerald-800">
-                      {product.name}
-                    </h3>
-
-                    <p className="mt-1 truncate text-xs leading-5 text-slate-500">
-                      {product.tagline}
-                    </p>
-
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                          Indicative price
-                        </p>
-                        <p className="mt-1 truncate text-sm font-bold text-slate-900">
-                          {product.indicativePrice}
-                        </p>
-                      </div>
-
-                      <div className="shrink-0 text-right">
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                          Warranty
-                        </p>
-                        <p className="mt-1 text-xs font-semibold text-slate-700">
-                          {product.warranty.split('+')[0]}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openProductDetails(product)}
-                        className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-2 text-xs font-semibold text-slate-700 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-900"
-                      >
-                        <Info className="h-3.5 w-3.5" />
-                        Details
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onSelectProductForConsultation(product.name)
-                        }
-                        className="inline-flex min-h-10 items-center justify-center gap-1 rounded-lg bg-emerald-800 px-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-900"
-                      >
-                        Enquire
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-
-              {/* View all products card — always last */}
-              <button
-                type="button"
-                onClick={showCatalogue}
-                className="group flex min-h-[330px] w-[180px] shrink-0 snap-start flex-col items-center justify-center rounded-2xl border border-dashed border-emerald-300 bg-emerald-50/60 px-5 text-center transition-all duration-300 hover:border-emerald-600 hover:bg-emerald-50 sm:w-[200px]"
+              Your estimated contribution after subsidy
+            </p>
+            <p
+              className={`mt-1 text-5xl font-bold tracking-tight ${
+                featured ? 'text-white' : 'text-[#174b35]'
+              }`}
+            >
+              {item.price}
+              <span
+                className={`ml-1.5 text-xs font-normal ${
+                  featured ? 'text-emerald-100/60' : 'text-slate-400'
+                }`}
               >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-emerald-800 shadow-sm transition-transform duration-300 group-hover:translate-x-1">
-                  <MoveRight className="h-5 w-5" />
-                </span>
+                onwards*
+              </span>
+            </p>
+          </div>
 
-                <span className="mt-4 text-sm font-bold text-slate-900">
-                  View all products
-                </span>
+          {/* Subsidy bar: shows how much of the cost is covered */}
+          <div className="mt-6">
+            <div
+              className={`h-2 w-full overflow-hidden rounded-full ${
+                featured ? 'bg-white/20' : 'bg-slate-100'
+              }`}
+              role="img"
+              aria-label={`Subsidy covers about ${percent}% of the system cost`}
+            >
+              <div
+                className={`h-full rounded-full ${
+                  featured ? 'bg-emerald-300' : 'bg-emerald-600'
+                }`}
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+            <p
+              className={`mt-2 text-xs font-medium ${
+                featured ? 'text-emerald-100' : 'text-emerald-700'
+              }`}
+            >
+              Subsidy covers about {percent}% of the cost
+            </p>
+          </div>
 
-                <span className="mt-1 text-xs leading-5 text-slate-500">
-                  Explore our complete solar range
-                </span>
-
-                <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-emerald-800">
-                  Browse catalogue
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </span>
-              </button>
+          {/* Details */}
+          <dl
+            className={`mt-6 space-y-3 border-t pt-5 text-sm ${
+              featured ? 'border-white/15' : 'border-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <dt
+                className={featured ? 'text-emerald-100/70' : 'text-slate-500'}
+              >
+                Estimated system cost
+              </dt>
+              <dd className="font-semibold">{item.cost}</dd>
             </div>
 
-            <p className="mt-1 text-[11px] text-slate-400 sm:hidden">
-              Swipe left or right to explore more products →
-            </p>
-          </div>
-        )}
-
-        {/* Empty state */}
-        {filteredProducts.length === 0 && (
-          <div className="mt-5 rounded-2xl border border-slate-200 bg-white py-12 text-center">
-            <p className="text-sm font-medium text-slate-700">
-              No products in this category yet.
-            </p>
-            <button
-              type="button"
-              onClick={() => selectCategory('all')}
-              className="mt-3 text-sm font-semibold text-emerald-800 hover:underline"
-            >
-              View all products
-            </button>
-          </div>
-        )}
-
-        {/* Full catalogue grid */}
-        {showAllProducts && (
-          <div
-            id="all-products"
-            className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {PRODUCTS_DATA.map((product) => (
-              <article
-                key={product.id}
-                className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg"
+            <div className="flex items-center justify-between gap-3 pb-2 md:pb-4">
+              <dt
+                className={featured ? 'text-emerald-100/70' : 'text-slate-500'}
               >
-                <button
-                  type="button"
-                  onClick={() => setSelectedProduct(product)}
-                  aria-label={`View details for ${product.name}`}
-                  className="relative block h-44 w-full overflow-hidden bg-emerald-50 text-left"
-                >
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                Subsidy shown
+              </dt>
+              <dd
+                className={`font-semibold ${
+                  featured ? 'text-emerald-200' : 'text-emerald-700'
+                }`}
+              >
+                {item.subsidy}
+              </dd>
+            </div>
+          </dl>
 
-                  <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-semibold text-slate-700">
-                    {product.categoryLabel}
-                  </span>
-
-                  {product.subsidyEligible && (
-                    <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-800 px-2.5 py-1.5 text-[10px] font-semibold text-white">
-                      <Check className="h-3 w-3" />
-                      Subsidy eligible
-                    </span>
-                  )}
-
-                  <span className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-2.5 py-1.5 text-[10px] font-semibold text-emerald-900">
-                    {product.efficiency}
-                  </span>
-                </button>
-
-                <div className="p-4 sm:p-5">
-                  <h3 className="truncate text-lg font-bold text-slate-900 group-hover:text-emerald-800">
-                    {product.name}
-                  </h3>
-
-                  <p className="mt-1 truncate text-xs text-slate-500">
-                    {product.tagline}
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
-                    <div className="min-w-0">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400">
-                        Indicative price
-                      </p>
-                      <p className="mt-1 truncate text-sm font-bold text-slate-900">
-                        {product.indicativePrice}
-                      </p>
-                    </div>
-
-                    <div className="shrink-0 text-right">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-400">
-                        Warranty
-                      </p>
-                      <p className="mt-1 text-xs font-semibold text-slate-700">
-                        {product.warranty.split('+')[0]}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedProduct(product)}
-                      className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-2 text-xs font-semibold text-slate-700 hover:border-emerald-300 hover:bg-emerald-50"
-                    >
-                      <Info className="h-3.5 w-3.5" />
-                      Details
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onSelectProductForConsultation(product.name)
-                      }
-                      className="inline-flex min-h-10 items-center justify-center gap-1 rounded-lg bg-emerald-800 px-2 text-xs font-semibold text-white hover:bg-emerald-900"
-                    >
-                      Enquire
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-
-        {/* Consultation banner */}
-        <div className="relative mt-10 overflow-hidden rounded-2xl bg-[#123A2C] px-5 py-6 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:px-8">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-12 -top-20 h-48 w-48 rounded-full border border-white/10"
-          />
-
-          <div className="relative">
-            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300">
-              Need help choosing?
-            </p>
-
-            <h3 className="mt-2 text-xl font-bold tracking-tight text-white sm:text-2xl">
-              Let&apos;s find the right solar system.
-            </h3>
-
-            <p className="mt-1 text-sm text-white/65">
-              Discuss your project and product requirements with our team.
-            </p>
-          </div>
-
+          {/* Button */}
           <button
             type="button"
+            tabIndex={isClone ? -1 : undefined}
             onClick={() =>
-              onSelectProductForConsultation(
-                'Custom Solar System Sizing and Product Consultation'
+              handleConsultation(
+                `I am interested in a ${item.size} solar system. Please share pricing and subsidy details.`
               )
             }
-            className="relative mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-emerald-900 transition-colors hover:bg-emerald-50 sm:mt-0 sm:w-auto sm:shrink-0"
+            className={`mt-auto flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition active:scale-[0.99] ${
+              featured
+                ? 'mt-7 bg-white text-[#174b35] hover:bg-emerald-50'
+                : 'mt-7 border border-[#174b35] text-[#174b35] hover:bg-emerald-50'
+            }`}
           >
-            Talk to an expert
+            Get a free quote
             <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>
+    );
+  };
 
-      {/* Product details modal */}
-      {selectedProduct && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/50 p-3 backdrop-blur-sm sm:p-6"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setSelectedProduct(null);
-            }
-          }}
-        >
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="product-modal-title"
-            className="flex max-h-[90dvh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/50 bg-white shadow-2xl"
-          >
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-7">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-emerald-800">
-                  Product details
-                </p>
+  const renderProductCard = (
+    product: (typeof PRODUCTS)[number],
+    isClone = false
+  ) => {
+    const Icon = product.icon;
 
-                <h3
-                  id="product-modal-title"
-                  className="mt-1.5 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl"
-                >
-                  {selectedProduct.name}
-                </h3>
-              </div>
+    return (
+      <div
+        key={isClone ? `${product.id}-clone` : product.id}
+        aria-hidden={isClone || undefined}
+        className={`w-full shrink-0 snap-center snap-always px-1 py-1 sm:w-auto sm:p-0 ${
+          isClone ? 'sm:hidden' : ''
+        }`}
+      >
+        <article className="h-full overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-emerald-200 hover:shadow-lg">
+          <div className="relative h-44 overflow-hidden sm:h-48">
+            <Image
+              src={product.image}
+              alt={`${product.name} solar system`}
+              fill
+              sizes="(max-width: 639px) 100vw, 33vw"
+              className="object-cover transition-transform duration-500 hover:scale-105"
+            />
+            <span className="absolute bottom-3 left-3 flex h-8 w-8 items-center justify-center rounded-lg bg-white text-emerald-800">
+              <Icon className="h-4 w-4" />
+            </span>
+          </div>
 
-              <button
-                type="button"
-                aria-label="Close product details"
-                onClick={() => setSelectedProduct(null)}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+          <div className="p-4 sm:p-5">
+            <h4 className="text-base font-bold text-[#102E24] sm:text-lg">
+              {product.name}
+            </h4>
 
-            <div className="overflow-y-auto p-5 sm:p-7">
-              <p className="text-sm leading-7 text-slate-600">
-                {selectedProduct.description}
+            <p className="mt-1 min-h-[40px] text-xs leading-5 text-slate-500 sm:text-sm">
+              {product.line}
+            </p>
+
+            <button
+              type="button"
+              tabIndex={isClone ? -1 : undefined}
+              onClick={() =>
+                handleConsultation(
+                  `I am interested in a ${product.name} solar system. Please share pricing details.`
+                )
+              }
+              className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800 transition hover:text-emerald-600 sm:text-sm"
+            >
+              Enquire now
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        </article>
+      </div>
+    );
+  };
+
+  return (
+    <section id="products" className="bg-white py-9 sm:py-14 lg:py-0 lg:pb-12">
+      <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-7 lg:px-12">
+        <div className="mx-auto max-w-6xl">
+
+          {/* PRICING */}
+          <div>
+
+            {/* Heading */}
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">
+                Solar made affordable
               </p>
 
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-emerald-50 p-4">
-                  <p className="text-xs text-slate-500">Efficiency</p>
-                  <p className="mt-1 text-sm font-bold text-emerald-900">
-                    {selectedProduct.efficiency}
-                  </p>
-                </div>
+              <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#102E24] sm:text-5xl">
+                Bring solar home.
+                <span className="block text-emerald-700">
+                  Starting at ₹25,000*
+                </span>
+              </h2>
 
-                <div className="rounded-xl bg-slate-50 p-4">
-                  <p className="text-xs text-slate-500">Warranty</p>
-                  <p className="mt-1 text-sm font-bold text-slate-900">
-                    {selectedProduct.warranty}
-                  </p>
-                </div>
+              <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-slate-500 sm:text-sm">
+                Affordable rooftop solar solutions with applicable
+                government subsidy support.
+              </p>
+            </div>
+
+            {/* Cards: auto-sliding one at a time on mobile, three columns on desktop */}
+            <div className="mt-6 md:mt-14">
+              <div
+                ref={pricing.ref}
+                {...pricing.bind}
+                className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-3 md:items-stretch md:gap-6 md:overflow-visible lg:gap-8"
+              >
+                {PRICING.map((item) => renderPricingCard(item))}
+                {/* Duplicate of the first card so the loop always slides right to left (mobile only) */}
+                {renderPricingCard(PRICING[0], true)}
               </div>
 
-              <h4 className="mb-3 mt-6 text-sm font-bold text-slate-900">
-                Technical specifications
-              </h4>
-
-              <div className="overflow-hidden rounded-xl border border-slate-200">
-                {Object.entries(selectedProduct.specifications).map(
-                  ([key, value], index) => (
-                    <div
-                      key={key}
-                      className={`grid grid-cols-2 gap-4 px-4 py-3 text-sm ${
-                        index % 2 === 0 ? 'bg-slate-50/70' : 'bg-white'
-                      }`}
-                    >
-                      <span className="text-slate-500">{key}</span>
-                      <span className="break-words font-medium text-slate-800">
-                        {value}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-
-              <h4 className="mb-3 mt-6 text-sm font-bold text-slate-900">
-                Features and benefits
-              </h4>
-
-              <div className="space-y-3">
-                {selectedProduct.features.map((feature, index) => (
-                  <div
-                    key={`${selectedProduct.id}-detail-${index}`}
-                    className="flex items-start gap-2.5 text-sm leading-6 text-slate-600"
-                  >
-                    <Check className="mt-1 h-4 w-4 shrink-0 text-emerald-700" />
-                    {feature}
-                  </div>
+              {/* Position dots (mobile only, not clickable) */}
+              <div
+                className="mt-3 flex items-center justify-center gap-2 md:hidden"
+                aria-hidden="true"
+              >
+                {PRICING.map((item, index) => (
+                  <span
+                    key={item.size}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      pricing.active === index
+                        ? 'w-6 bg-emerald-700'
+                        : 'w-1.5 bg-slate-300'
+                    }`}
+                  />
                 ))}
               </div>
+            </div>
 
-              <div className="mt-6 rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
-                <p className="text-xs font-semibold text-emerald-900">
-                  Subsidy information
-                </p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
-                  {selectedProduct.subsidyNote}
-                </p>
+            
+          </div>
+
+          {/* SOLAR PRODUCTS */}
+          <div className="mt-10 sm:mt-16">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 sm:text-xs">
+                Our solutions
+              </p>
+              <h3 className="mt-1 text-xl font-semibold tracking-tight text-[#102E24] sm:text-3xl">
+                Choose your solar system
+              </h3>
+            </div>
+
+            {/* Cards: auto-sliding one at a time on mobile, three columns from 640px up */}
+            <div className="mt-4">
+              <div
+                ref={products.ref}
+                {...products.bind}
+                className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-3 sm:gap-5 sm:overflow-visible"
+              >
+                {PRODUCTS.map((product) => renderProductCard(product))}
+                {/* Duplicate of the first card for the seamless loop (mobile only) */}
+                {renderProductCard(PRODUCTS[0], true)}
+              </div>
+
+              {/* Position dots (mobile only, not clickable) */}
+              <div
+                className="mt-3 flex items-center justify-center gap-2 sm:hidden"
+                aria-hidden="true"
+              >
+                {PRODUCTS.map((product, index) => (
+                  <span
+                    key={product.id}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      products.active === index
+                        ? 'w-6 bg-emerald-700'
+                        : 'w-1.5 bg-slate-300'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
-
-            <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-white p-4 sm:flex-row sm:justify-end sm:px-7">
-              <button
-                type="button"
-                onClick={() => setSelectedProduct(null)}
-                className="rounded-xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-              >
-                Close
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  const productName = selectedProduct.name;
-                  setSelectedProduct(null);
-                  onSelectProductForConsultation(productName);
-                }}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-800 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-900"
-              >
-                Enquire about this product
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
           </div>
+
         </div>
-      )}
+      </div>
     </section>
   );
 }

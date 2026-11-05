@@ -42,8 +42,9 @@ export default function Home() {
         {/* Section 1: Hero Banner & Quick Form */}
         <HeroSection onOpenConsultation={handleOpenConsultation} />
 
+        <ProductsSection onOpenConsultation={handleOpenConsultation} />
         {/* Section 6: Company Highlights & Key Numbers Counter */}
-        <StatsSection />
+        {/* <StatsSection /> */}
 
         {/* Section: Completed Installations Gallery */}
         <CompletedProjectsSection />

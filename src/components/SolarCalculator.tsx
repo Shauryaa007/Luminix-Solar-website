@@ -152,7 +152,7 @@ const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
   const subsidyPct = Math.min(100, Math.round((subsidy.total / Math.max(grossCost, 1)) * 100));
 
   const desktopView = (
-    <div className="hidden lg:block">
+    <div className="hidden lg:mx-auto lg:block lg:max-w-[1320px]">
       {/* Header row */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
         <div className="max-w-2xl">
@@ -160,7 +160,7 @@ const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
             <Sun className="h-4 w-4 shrink-0 text-emerald-700" />
             PM Surya Ghar Muft Bijli Yojana
           </div>
-          <h2 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[-0.035em] text-[#102E24] sm:mt-5 sm:text-5xl xl:text-6xl">
+          <h2 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[-0.035em] text-[#102E24] sm:mt-5 sm:text-5xl xl:text-5xl">
             How much
             <br />
             <span className="font-semibold text-emerald-700">can you save?</span>
@@ -184,7 +184,7 @@ const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
       {/* Main card: controls on the left, results on the right */}
       <div className="mt-8 grid grid-cols-1 overflow-hidden rounded-2xl lg:mt-10 lg:grid-cols-12 lg:rounded-[28px] border border-slate-200 bg-white shadow-2xl shadow-emerald-950/10">
         {/* ---- Controls ---- */}
-        <div className="p-5 sm:p-8 lg:col-span-5 xl:p-10">
+        <div className="p-5 sm:p-8 lg:col-span-5 xl:p-8">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-800">
               <Calculator className="h-5 w-5" />
@@ -381,7 +381,7 @@ const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
         </div>
 
         {/* ---- Results ---- */}
-        <div className="relative isolate flex flex-col justify-between overflow-hidden bg-[#102E24] p-5 text-white sm:p-8 lg:col-span-7 xl:p-10">
+        <div className="relative isolate flex flex-col justify-between overflow-hidden bg-[#102E24] p-5 text-white sm:p-8 lg:col-span-7 xl:p-8">
           <div
             aria-hidden="true"
             className="absolute inset-0 -z-20 bg-cover bg-center"
@@ -405,7 +405,7 @@ const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
               You can save every month
             </div>
             <div className="mt-3 flex flex-wrap items-baseline gap-x-3">
-              <span className="text-5xl font-semibold tracking-[-0.04em] sm:text-7xl xl:text-8xl">
+              <span className="text-5xl font-semibold tracking-[-0.04em] sm:text-6xl xl:text-7xl">
                 {formatINR(monthlySavings)}
               </span>
               <span className="text-lg text-white/60">/ month</span>
@@ -790,7 +790,7 @@ const SolarCalculator = ({ onApplyForCapacity }: SolarCalculatorProps) => {
   return (
     <section
       id="calculator"
-      className="overflow-hidden bg-white py-8 sm:py-12 lg:py-20"
+      className="overflow-hidden bg-white py-8 sm:py-12 lg:py-14"
     >
       <div className="mx-auto w-full max-w-[1600px] px-3.5 sm:px-7 lg:px-12">
         {mobileView}
