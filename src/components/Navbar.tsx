@@ -1,4 +1,4 @@
-
+﻿
 'use client';
 
 import Image from 'next/image';
@@ -88,7 +88,7 @@ export default function Navbar({
           <div className="flex min-w-0 items-center gap-3">
             <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold tracking-wide text-emerald-100/90">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-300" />
-              Residential and commercial solar solutions
+              Luminix Solar in association with A & V Agrivoltaics
             </span>
           </div>
 
@@ -143,11 +143,7 @@ export default function Navbar({
             </span>
 
             <span className="block">
-              <span className="block whitespace-nowrap text-[19px] font-extrabold leading-none tracking-tight text-[#173d2d] sm:text-[22px]">
-                Luminix<span className="text-emerald-600">Solar</span>
-              </span>
-
-            </span>
+              <span className="block whitespace-nowrap text-[18px] font-extrabold leading-none tracking-tight text-[#173d2d] sm:text-[21px]">Luminix<span className="text-emerald-600">Solar</span></span><span className="mt-1 block whitespace-nowrap text-[9px] font-medium tracking-tight text-slate-500 sm:text-[10px]">in association with <span className="font-semibold text-emerald-800">A & V Agrivoltaics</span></span></span>
           </a>
 
           {/* Desktop navigation */}

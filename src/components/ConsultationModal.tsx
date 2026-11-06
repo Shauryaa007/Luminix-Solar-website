@@ -52,9 +52,11 @@ export default function ConsultationModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false);
       setFormData((previous) => ({
         ...previous,
         requirement: prefillNote || previous.requirement,
@@ -94,7 +96,7 @@ export default function ConsultationModal({
     }));
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
@@ -104,16 +106,39 @@ export default function ConsultationModal({
 
     setIsSubmitting(true);
 
-    // Replace this simulation with your enquiry API or CRM integration.
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const response = await fetch('/api/consultation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          source: 'mobile_consultation_popup',
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to submit consultation request.');
+      }
+
       setIsSubmitted(true);
-    }, 700);
+    } catch (err: unknown) {
+      console.error('Modal submission error:', err);
+      alert(err instanceof Error ? err.message : 'An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
-    if (isSubmitting) return;
-    onClose();
+    if (isSubmitting || isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 270);
   };
 
   const handleReset = () => {
@@ -126,7 +151,7 @@ export default function ConsultationModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-slate-950/60 p-3 backdrop-blur-sm sm:p-6"
+      className={`fixed inset-0 z-[100] flex items-end sm:items-center justify-center overflow-y-auto bg-slate-950/60 p-0 sm:p-6 backdrop-blur-sm ${isClosing ? 'opacity-0 transition-opacity duration-[280ms] ease-in' : 'modal-backdrop-animate'}`}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) {
           handleClose();
@@ -137,7 +162,7 @@ export default function ConsultationModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="consultation-title"
-        className="relative my-auto flex max-h-[calc(100dvh-24px)] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/60 bg-white shadow-2xl shadow-slate-950/25 sm:max-h-[calc(100dvh-48px)] sm:flex-row"
+        className={`relative mt-auto sm:my-auto flex max-h-[92dvh] sm:max-h-[calc(100dvh-48px)] w-full max-w-4xl flex-col overflow-hidden rounded-t-[28px] sm:rounded-3xl border border-white/60 bg-white shadow-2xl shadow-slate-950/25 sm:flex-row ${isClosing ? 'modal-sheet-closing' : 'modal-sheet-animate'}`}
       >
         {/* Left brand panel */}
         <aside className="relative hidden w-[36%] shrink-0 flex-col overflow-hidden bg-[#123d2b] p-7 text-white sm:flex lg:p-8">

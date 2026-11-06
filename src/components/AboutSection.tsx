@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import {
@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Building2,
   FileText,
+  Handshake,
   ShieldCheck,
   Sun,
 } from 'lucide-react';
@@ -63,7 +64,7 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
             </h2>
 
             <p className="mt-3 max-w-xl text-base leading-7 text-slate-600 sm:mt-4 sm:text-lg sm:leading-8">
-              Luminix Solar is a registered solar company in Lucknow, working since 2024. We
+              Luminix Solar, in association with A & V Agrivoltaics, is a registered solar company in Lucknow, working since 2024. We
               install rooftop solar for homes, businesses and farms, and help you with the PM
               Surya Ghar subsidy.
             </p>
@@ -86,6 +87,18 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                     <dt className="text-xs text-slate-500">Registered entity</dt>
                     <dd className="text-sm font-semibold text-slate-900 sm:text-base">
                       Luminix Solar Pvt. Ltd.
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3.5 py-3">
+                  <span className={rowIcon}>
+                    <Handshake className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <dt className="text-xs text-slate-500">In association with</dt>
+                    <dd className="text-sm font-semibold text-emerald-950 sm:text-base">
+                      A & V Agrivoltaics
                     </dd>
                   </div>
                 </div>

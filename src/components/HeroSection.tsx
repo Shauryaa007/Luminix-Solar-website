@@ -12,6 +12,7 @@ import { COMPANY_INFO } from '@/data/solarData';
 
 interface HeroSectionProps {
   onOpenConsultation: (prefill?: string) => void;
+  onFormInteraction?: () => void;
 }
 
 const HERO_BACKGROUND_IMAGES = [
@@ -24,6 +25,7 @@ const HERO_BACKGROUND_IMAGES = [
 
 export default function HeroSection({
   onOpenConsultation,
+  onFormInteraction,
 }: HeroSectionProps) {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
 
@@ -53,6 +55,9 @@ export default function HeroSection({
     field: keyof typeof formData,
     value: string
   ) => {
+    if (value.trim().length > 0) {
+      onFormInteraction?.();
+    }
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errorMessage) setErrorMessage(null);
   };

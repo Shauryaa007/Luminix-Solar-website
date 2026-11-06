@@ -99,7 +99,7 @@ const jsonLd = {
       logo: `${siteUrl}/images/logo.png`,
       image: `${siteUrl}/images/hero-solar.jpg`,
       description:
-        "Leading rooftop solar installation partner in Lucknow and Barabanki, Uttar Pradesh. Empanelled under MNRE PM Surya Ghar Muft Bijli Yojana providing turnkey solar systems with up to 90% bill savings.",
+        "Leading rooftop solar installation partner in Lucknow and Barabanki, Uttar Pradesh, in association with A & V Agrivoltaics. Empanelled under MNRE PM Surya Ghar Muft Bijli Yojana providing turnkey solar systems with up to 90% bill savings.",
       telephone: "+91-9793078997",
       email: "luminixsolar2025@gmail.com",
       priceRange: "₹₹",

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Image from 'next/image';
 import { MapPin, Phone } from 'lucide-react';
 import { COMPANY_INFO } from '@/data/solarData';
@@ -58,8 +58,7 @@ export default function Footer() {
               </a>
 
               <p className="mt-5 max-w-sm text-sm leading-7 text-white/70 sm:text-[15px]">
-                Rooftop solar for homes, businesses and farms in Lucknow.
-                Making clean energy accessible and affordable.
+                Luminix Solar, in association with A & V Agrivoltaics, provides rooftop solar for homes, businesses and farms in Lucknow & UP. Making clean energy accessible and affordable.
               </p>
 
             </div>
@@ -134,6 +133,8 @@ export default function Footer() {
                 Luminix Solar Pvt. Ltd.
               </span>
               &nbsp;·&nbsp;
+              In association with <span className="font-semibold text-emerald-300">A &amp; V Agrivoltaics</span>
+              &nbsp;·&nbsp;
               GSTIN 09CCVPV0642N1ZM
               &nbsp;·&nbsp;
               ISO 9001:2015 &amp; ISO 14001:2015 certified
@@ -148,7 +149,7 @@ export default function Footer() {
             <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
 
               <p className="text-xs leading-5 text-white/60">
-                © {year} Luminix Solar Pvt. Ltd. All rights reserved.
+                © {year} Luminix Solar Pvt. Ltd. in association with A & V Agrivoltaics. All rights reserved.
               </p>
 
               {LEGAL_LINKS.length > 0 && (
