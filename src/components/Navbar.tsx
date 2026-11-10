@@ -1,4 +1,4 @@
-﻿
+
 'use client';
 
 import Image from 'next/image';
@@ -16,9 +16,10 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { COMPANY_INFO } from '@/data/solarData';
+import { ConsultationPrefillData } from '@/components/ConsultationForm';
 
 interface NavbarProps {
-  onOpenConsultation: (prefill?: string) => void;
+  onOpenConsultation: (prefill?: string | ConsultationPrefillData) => void;
 }
 
 const navLinks = [
@@ -30,7 +31,7 @@ const navLinks = [
   { name: 'About', href: '#about' },
   // { name: 'Reviews', href: '#testimonials' },
   { name: 'Contact', href: '#contact' },
-  { name: 'FAQ', href: '#faq' },
+  // { name: 'FAQ', href: '#faq' },
 ];
 
 export default function Navbar({
