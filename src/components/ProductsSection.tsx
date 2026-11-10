@@ -1,16 +1,19 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   ArrowRight,
   Battery,
+  ChevronLeft,
+  ChevronRight,
   Unplug,
   Zap,
 } from 'lucide-react';
+import { ConsultationPrefillData } from '@/components/ConsultationForm';
 
 interface ProductsSectionProps {
-  onOpenConsultation?: (prefill?: string) => void;
+  onOpenConsultation?: (prefill?: string | ConsultationPrefillData) => void;
 }
 
 // costValue / subsidyValue are numbers used only to draw the subsidy bar.
@@ -32,7 +35,6 @@ const PRICING = [
     subsidy: '₹90,000',
     costValue: 125000,
     subsidyValue: 90000,
-    popular: true,
   },
   {
     size: '3 kW',
@@ -40,6 +42,24 @@ const PRICING = [
     cost: '₹1,80,000',
     subsidy: '₹1,08,000',
     costValue: 180000,
+    subsidyValue: 108000,
+    popular: true,
+  },
+  {
+    size: '5 kW',
+    price: '₹1,82,000',
+    cost: '₹2,80,000–2,90,000',
+    subsidy: '₹1,08,000',
+    costValue: 290000,
+    subsidyValue: 108000,
+    popular: true,
+  },
+  {
+    size: '10 kW',
+    price: '₹4,32,000',
+    cost: '₹5,20,000–5,40,000',
+    subsidy: '₹1,08,000',
+    costValue: 540000,
     subsidyValue: 108000,
   },
 ];
@@ -74,16 +94,17 @@ const POPULAR_INDEX = Math.max(
 );
 
 /**
- * Mobile carousel behaviour shared by both card rows:
- * one card at a time, auto-slides right to left, loops seamlessly
- * (the row must end with a duplicate of its first card), pauses on touch.
- * Below `breakpoint` px it runs; above it the row is a normal grid.
+ * Auto-slide carousel with seamless infinite loop support:
+ * - Slides 1 card at a time smoothly
+ * - Displays 3 cards at a time on desktop (lg:), 2 on tablet (sm:), 1 on mobile
+ * - Pauses on mouse enter / touch interaction
+ * - Loops seamlessly without jumping by resetting from clones to originals
  */
 function useAutoSlide(
   count: number,
-  breakpoint: number,
   intervalMs: number,
-  startIndex = 0
+  startIndex = 0,
+  maxBreakpoint?: number
 ) {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(startIndex);
@@ -91,12 +112,58 @@ function useAutoSlide(
   const resumeTimerRef = useRef<number | undefined>(undefined);
   const settleTimerRef = useRef<number | undefined>(undefined);
 
-  // Open on the starting card (mobile only)
-  useEffect(() => {
+  const getStepWidth = useCallback(() => {
     const el = ref.current;
-    if (!el || startIndex === 0 || window.innerWidth >= breakpoint) return;
-    el.scrollTo({ left: startIndex * el.clientWidth });
-  }, [startIndex, breakpoint]);
+    if (!el) return 0;
+    const first = el.children[0] as HTMLElement | undefined;
+    const second = el.children[1] as HTMLElement | undefined;
+    if (first && second) {
+      const diff = second.offsetLeft - first.offsetLeft;
+      if (diff > 0) return diff;
+    }
+    if (first) {
+      return first.offsetWidth;
+    }
+    return el.clientWidth;
+  }, []);
+
+  const slideNext = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (maxBreakpoint && window.innerWidth >= maxBreakpoint) return;
+    const step = getStepWidth();
+    if (step <= 0) return;
+    const current = Math.round(el.scrollLeft / step);
+    el.scrollTo({ left: (current + 1) * step, behavior: 'smooth' });
+  }, [getStepWidth, maxBreakpoint]);
+
+  const slidePrev = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (maxBreakpoint && window.innerWidth >= maxBreakpoint) return;
+    const step = getStepWidth();
+    if (step <= 0) return;
+    const current = Math.round(el.scrollLeft / step);
+    if (current <= 0) {
+      el.scrollTo({ left: count * step, behavior: 'auto' });
+      requestAnimationFrame(() => {
+        el.scrollTo({ left: (count - 1) * step, behavior: 'smooth' });
+      });
+    } else {
+      el.scrollTo({ left: (current - 1) * step, behavior: 'smooth' });
+    }
+  }, [count, getStepWidth, maxBreakpoint]);
+
+  const goTo = useCallback(
+    (index: number) => {
+      const el = ref.current;
+      if (!el) return;
+      const step = getStepWidth();
+      if (step <= 0) return;
+      el.scrollTo({ left: index * step, behavior: 'smooth' });
+    },
+    [getStepWidth]
+  );
 
   // Auto-slide
   useEffect(() => {
@@ -107,11 +174,9 @@ function useAutoSlide(
 
     const interval = window.setInterval(() => {
       const el = ref.current;
-      if (!el || pausedRef.current || window.innerWidth >= breakpoint) return;
-      const width = el.clientWidth;
-      if (width === 0) return;
-      const index = Math.round(el.scrollLeft / width);
-      el.scrollTo({ left: (index + 1) * width, behavior: 'smooth' });
+      if (!el || pausedRef.current) return;
+      if (maxBreakpoint && window.innerWidth >= maxBreakpoint) return;
+      slideNext();
     }, intervalMs);
 
     return () => {
@@ -119,24 +184,28 @@ function useAutoSlide(
       window.clearTimeout(resumeTimerRef.current);
       window.clearTimeout(settleTimerRef.current);
     };
-  }, [breakpoint, intervalMs]);
+  }, [intervalMs, maxBreakpoint, slideNext]);
 
   const onScroll = () => {
     const el = ref.current;
-    if (!el || el.clientWidth === 0) return;
-    const index = Math.round(el.scrollLeft / el.clientWidth);
-    setActive(index % count);
+    if (!el) return;
+    const step = getStepWidth();
+    if (step <= 0) return;
+    const rawIndex = Math.round(el.scrollLeft / step);
+    setActive(rawIndex % count);
 
-    // Once settled on the duplicate first card, jump back to the real one.
-    // They look identical, so the loop is seamless.
+    // Seamless loop reset when settling on or past clones
     window.clearTimeout(settleTimerRef.current);
     settleTimerRef.current = window.setTimeout(() => {
       const node = ref.current;
-      if (!node || node.clientWidth === 0) return;
-      if (Math.round(node.scrollLeft / node.clientWidth) >= count) {
-        node.scrollTo({ left: 0, behavior: 'auto' });
+      if (!node) return;
+      const currentStep = getStepWidth();
+      if (currentStep <= 0) return;
+      const idx = Math.round(node.scrollLeft / currentStep);
+      if (idx >= count) {
+        node.scrollTo({ left: (idx - count) * currentStep, behavior: 'auto' });
       }
-    }, 150);
+    }, 180);
   };
 
   const pause = () => {
@@ -144,21 +213,26 @@ function useAutoSlide(
     pausedRef.current = true;
   };
 
-  const resume = () => {
+  const resume = (delay = 2500) => {
     window.clearTimeout(resumeTimerRef.current);
     resumeTimerRef.current = window.setTimeout(() => {
       pausedRef.current = false;
-    }, 2500);
+    }, delay);
   };
 
   return {
     ref,
     active,
+    slideNext,
+    slidePrev,
+    goTo,
     bind: {
       onScroll,
+      onMouseEnter: pause,
+      onMouseLeave: () => resume(1500),
       onTouchStart: pause,
-      onTouchEnd: resume,
-      onTouchCancel: resume,
+      onTouchEnd: () => resume(2500),
+      onTouchCancel: () => resume(2500),
     },
   };
 }
@@ -166,12 +240,12 @@ function useAutoSlide(
 export default function ProductsSection({
   onOpenConsultation,
 }: ProductsSectionProps) {
-  // Pricing row: grid from 768px up
-  const pricing = useAutoSlide(PRICING.length, 768, 3500, POPULAR_INDEX);
-  // Product row: grid from 640px up
-  const products = useAutoSlide(PRODUCTS.length, 640, 4000);
+  // Pricing row: auto-slides in an infinite loop displaying 3 cards at a time on desktop
+  const pricing = useAutoSlide(PRICING.length, 3500, POPULAR_INDEX);
+  // Product row: grid from 640px up, carousel on mobile
+  const products = useAutoSlide(PRODUCTS.length, 4000, 0, 640);
 
-  const handleConsultation = (prefill?: string) => {
+  const handleConsultation = (prefill?: string | ConsultationPrefillData) => {
     if (onOpenConsultation) {
       onOpenConsultation(prefill);
     } else {
@@ -183,23 +257,22 @@ export default function ProductsSection({
 
   const renderPricingCard = (
     item: (typeof PRICING)[number],
-    isClone = false
+    isClone = false,
+    cloneIndex?: number
   ) => {
     const featured = !!item.popular;
     const percent = Math.round((item.subsidyValue / item.costValue) * 100);
 
     return (
       <div
-        key={isClone ? `${item.size}-clone` : item.size}
+        key={isClone ? `${item.size}-clone-${cloneIndex}` : item.size}
         aria-hidden={isClone || undefined}
-        className={`w-full shrink-0 snap-center snap-always px-1 py-2 md:w-auto md:p-0 ${
-          isClone ? 'md:hidden' : ''
-        }`}
+        className="w-full shrink-0 snap-start px-1 py-2 sm:w-[calc(50%-12px)] lg:w-[calc((100%-48px)/3)] sm:p-0"
       >
         <div
-          className={`flex h-full flex-col rounded-3xl p-6 sm:p-7 ${
+          className={`flex h-full flex-col rounded-3xl p-6 sm:p-7 transition-all ${
             featured
-              ? 'bg-[#174b35] text-white shadow-[0_24px_60px_rgba(23,75,53,0.30)] md:-my-5 md:py-10'
+              ? 'bg-[#174b35] text-white shadow-[0_20px_50px_rgba(23,75,53,0.25)] ring-2 ring-emerald-400/30'
               : 'border border-slate-200 bg-white text-[#102E24] shadow-[0_4px_24px_rgba(16,46,36,0.05)]'
           }`}
         >
@@ -311,9 +384,13 @@ export default function ProductsSection({
             type="button"
             tabIndex={isClone ? -1 : undefined}
             onClick={() =>
-              handleConsultation(
-                `I am interested in a ${item.size} solar system. Please share pricing and subsidy details.`
-              )
+              handleConsultation({
+                capacity: item.size,
+                selectionMode: 'capacity',
+                systemType: 'On-Grid',
+                scheme: 'PMSG',
+                note: `I am interested in a ${item.size} solar system. Please share pricing and subsidy details.`,
+              })
             }
             className={`mt-auto flex min-h-12 w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition active:scale-[0.99] ${
               featured
@@ -370,9 +447,11 @@ export default function ProductsSection({
               type="button"
               tabIndex={isClone ? -1 : undefined}
               onClick={() =>
-                handleConsultation(
-                  `I am interested in a ${product.name} solar system. Please share pricing details.`
-                )
+                handleConsultation({
+                  systemType: product.name,
+                  scheme: 'PMSG',
+                  note: `I am interested in a ${product.name} solar system. Please share pricing details.`,
+                })
               }
               className="mt-3 inline-flex items-center gap-2 text-xs font-semibold text-emerald-800 transition hover:text-emerald-600 sm:text-sm"
             >
@@ -393,49 +472,76 @@ export default function ProductsSection({
           {/* PRICING */}
           <div>
 
-            {/* Heading */}
-            <div className="mx-auto max-w-2xl text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">
-                Solar made affordable
-              </p>
+            {/* Heading + Desktop Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5">
+              <div className="max-w-2xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">
+                  Solar made affordable
+                </p>
 
-              <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#102E24] sm:text-5xl">
-                Bring solar home.
-                <span className="block text-emerald-700">
-                  Starting at ₹25,000*
-                </span>
-              </h2>
+                <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#102E24] sm:text-5xl">
+                  Bring solar home.
+                  <span className="block text-emerald-700">
+                    Starting at ₹25,000*
+                  </span>
+                </h2>
 
-              <p className="mx-auto mt-3 max-w-md text-xs leading-6 text-slate-500 sm:text-sm">
-                Affordable rooftop solar solutions with applicable
-                government subsidy support.
-              </p>
+                <p className="mt-3 max-w-md text-xs leading-6 text-slate-500 sm:text-sm">
+                  Affordable rooftop solar solutions with applicable
+                  government subsidy support.
+                </p>
+              </div>
+
+              {/* Desktop / Tablet next & prev controls */}
+              <div className="hidden sm:flex items-center gap-2 pb-1">
+                <button
+                  type="button"
+                  onClick={pricing.slidePrev}
+                  aria-label="Previous solar system"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={pricing.slideNext}
+                  aria-label="Next solar system"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 active:scale-95"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Cards: auto-sliding one at a time on mobile, three columns on desktop */}
-            <div className="mt-6 md:mt-14">
+            {/* Cards: single row auto-sliding in an infinite loop, displaying 3 cards at a time on desktop */}
+            <div className="mt-8 md:mt-12">
               <div
                 ref={pricing.ref}
                 {...pricing.bind}
-                className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-3 md:items-stretch md:gap-6 md:overflow-visible lg:gap-8"
+                className="flex gap-6 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
               >
                 {PRICING.map((item) => renderPricingCard(item))}
-                {/* Duplicate of the first card so the loop always slides right to left (mobile only) */}
-                {renderPricingCard(PRICING[0], true)}
+                {/* Clones for seamless infinite looping when 3 cards are displayed simultaneously */}
+                {renderPricingCard(PRICING[0], true, 0)}
+                {renderPricingCard(PRICING[1], true, 1)}
+                {renderPricingCard(PRICING[2], true, 2)}
               </div>
 
-              {/* Position dots (mobile only, not clickable) */}
+              {/* Position dots with click support across all viewports */}
               <div
-                className="mt-3 flex items-center justify-center gap-2 md:hidden"
-                aria-hidden="true"
+                className="mt-6 flex items-center justify-center gap-2"
+                aria-label="Solar systems navigation"
               >
                 {PRICING.map((item, index) => (
-                  <span
+                  <button
                     key={item.size}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                    type="button"
+                    onClick={() => pricing.goTo(index)}
+                    aria-label={`Go to ${item.size} solar system`}
+                    className={`h-2 rounded-full transition-all duration-300 ${
                       pricing.active === index
-                        ? 'w-6 bg-emerald-700'
-                        : 'w-1.5 bg-slate-300'
+                        ? 'w-7 bg-emerald-700'
+                        : 'w-2 bg-slate-300 hover:bg-slate-400'
                     }`}
                   />
                 ))}

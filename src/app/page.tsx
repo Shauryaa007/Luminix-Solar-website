@@ -14,11 +14,12 @@ import FaqSection from '@/components/FaqSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import ConsultationModal from '@/components/ConsultationModal';
+import { ConsultationPrefillData } from '@/components/ConsultationForm';
 import FloatingActions from '@/components/FloatingActions';
 
 export default function Home() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalPrefill, setModalPrefill] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalPrefill, setModalPrefill] = useState<string | ConsultationPrefillData>('');
   const [hasInteractedWithHero, setHasInteractedWithHero] = useState(false);
 
   const hasInteractedWithHeroRef = React.useRef(false);
@@ -30,7 +31,7 @@ export default function Home() {
     hasInteractedWithHeroRef.current = hasInteractedWithHero;
   }, [hasInteractedWithHero]);
 
-  // Smart Mobile Popup: Triggers on mobile after 3.5s or on scroll (>150px)
+  // Mobile Popup: Triggers on mobile after 5 seconds
   // ONLY IF user hasn't started filling the hero form, and hasn't closed it in this view.
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -52,33 +53,17 @@ export default function Home() {
       setIsModalOpen(true);
     };
 
-    // 1. Time-based trigger: ~3.5 seconds
+    // Time-based trigger: exactly 5 seconds
     const timer = window.setTimeout(() => {
       triggerPopup();
-    }, 3500);
-
-    // 2. Scroll-based trigger: fires as soon as user scrolls down on mobile
-    const handleScroll = () => {
-      const currentScroll =
-        window.scrollY ||
-        document.documentElement.scrollTop ||
-        document.body.scrollTop ||
-        0;
-
-      if (currentScroll > 150) {
-        triggerPopup();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    }, 5000);
 
     return () => {
       window.clearTimeout(timer);
-      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
-  const handleOpenConsultation = (prefill?: string) => {
+  const handleOpenConsultation = (prefill?: string | ConsultationPrefillData) => {
     setModalPrefill(prefill || '');
     setIsModalOpen(true);
   };
@@ -102,16 +87,17 @@ export default function Home() {
         <HeroSection
           onOpenConsultation={handleOpenConsultation}
           onFormInteraction={() => setHasInteractedWithHero(true)}
+          prefill={modalPrefill}
         />
 
+        {/* Metric Section */}
         <StatsSection />
-        
-        <ProductsSection onOpenConsultation={handleOpenConsultation} />
-        {/* Section 6: Company Highlights & Key Numbers Counter */}
-        
 
-        {/* Section: Completed Installations Gallery */}
-        <CompletedProjectsSection />
+        {/* Our Work: Completed Installations Gallery */}
+        <CompletedProjectsSection onOpenConsultation={handleOpenConsultation} />
+
+        {/* Solar Made Affordable & Products Section */}
+        <ProductsSection onOpenConsultation={handleOpenConsultation} />
 
         {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
         <SolarCalculator onApplyForCapacity={handleOpenConsultation} />
@@ -125,15 +111,11 @@ export default function Home() {
         {/* Section 5: About Company, GSTIN, Authorised Brands & 5-Step Process */}
         <AboutSection />
 
-
-
-        {/* Section 7: FAQs & Catalogue Downloads */}
-        {/* <FaqSection /> */}
-
         {/* Section 1/5/7: Full Consultation & Contact Details */}
         <ContactSection />
 
-        <FaqSection/>
+        {/* Section 7: FAQs & Catalogue Downloads */}
+        {/* <FaqSection /> */}
 
         <Footer />
         {/* Section Coming Soon - temporary */}

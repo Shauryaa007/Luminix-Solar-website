@@ -9,10 +9,14 @@ import {
   Zap,
 } from 'lucide-react';
 import { COMPANY_INFO } from '@/data/solarData';
+import ConsultationForm, {
+  ConsultationPrefillData,
+} from '@/components/ConsultationForm';
 
 interface HeroSectionProps {
-  onOpenConsultation: (prefill?: string) => void;
+  onOpenConsultation: (prefill?: string | ConsultationPrefillData) => void;
   onFormInteraction?: () => void;
+  prefill?: string | ConsultationPrefillData;
 }
 
 const HERO_BACKGROUND_IMAGES = [
@@ -26,21 +30,9 @@ const HERO_BACKGROUND_IMAGES = [
 export default function HeroSection({
   onOpenConsultation,
   onFormInteraction,
+  prefill,
 }: HeroSectionProps) {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    city: '',
-    monthlyBill: '₹2,000 - ₹5,000',
-    propertyType: 'Residential Independent House / Villa',
-  });
-
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Automatically transition to the next image one by one every 4.5 seconds
   useEffect(() => {
@@ -50,73 +42,6 @@ export default function HeroSection({
 
     return () => clearInterval(timer);
   }, []);
-
-  const updateField = (
-    field: keyof typeof formData,
-    value: string
-  ) => {
-    if (value.trim().length > 0) {
-      onFormInteraction?.();
-    }
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errorMessage) setErrorMessage(null);
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErrorMessage(null);
-
-    // Validate 10-digit Indian mobile number
-    if (!/^[6-9]\d{9}$/.test(formData.mobile)) {
-      setErrorMessage('Please enter a valid 10-digit Indian mobile number.');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('/api/consultation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to submit inquiry. Please try again.');
-      }
-
-      setIsSubmitted(true);
-    } catch (err: unknown) {
-      console.error('Consultation submission error:', err);
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.';
-      setErrorMessage(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleReset = () => {
-    setFormData({
-      name: '',
-      mobile: '',
-      email: '',
-      city: '',
-      monthlyBill: '₹2,000 - ₹5,000',
-      propertyType: 'Residential Independent House / Villa',
-    });
-    setErrorMessage(null);
-    setIsSubmitted(false);
-  };
-
-  const inputClass =
-    'w-full max-w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 sm:py-3 text-base sm:text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-emerald-700 focus:ring-2 focus:ring-emerald-700/10 box-border';
-
-  const labelClass =
-    'mb-1.5 block text-xs font-semibold text-slate-600';
 
   return (
     <section
@@ -234,7 +159,7 @@ export default function HeroSection({
                   Free consultation
                 </div>
 
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-3 mb-5">
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-800">
                       Let&apos;s get started
@@ -249,175 +174,12 @@ export default function HeroSection({
                   </div>
                 </div>
 
-                {isSubmitted ? (
-                  <div className="py-8 text-center">
-                    <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-700" />
-
-                    <h3 className="mt-4 text-xl font-semibold text-slate-900">
-                      Thank you, {formData.name}!
-                    </h3>
-
-                    <p className="mt-2.5 text-sm leading-6 text-slate-600">
-                      Your solar consultation request has been recorded. Our certified solar engineer will contact you shortly at{' '}
-                      <span className="font-semibold text-slate-800">+91 {formData.mobile}</span>.
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={handleReset}
-                      className="mt-5 text-sm font-semibold text-emerald-800 hover:underline"
-                    >
-                      Submit another inquiry
-                    </button>
-                  </div>
-                ) : (
-                  <form
-                    onSubmit={handleSubmit}
-                    className="mt-5 space-y-4"
-                  >
-                    {errorMessage && (
-                      <div
-                        role="alert"
-                        className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700 leading-relaxed"
-                      >
-                        {errorMessage}
-                      </div>
-                    )}
-                    <div>
-                      <label htmlFor="hero-name" className={labelClass}>
-                        Full name *
-                      </label>
-                      <input
-                        id="hero-name"
-                        required
-                        autoComplete="name"
-                        placeholder="Your full name"
-                        value={formData.name}
-                        onChange={(e) =>
-                          updateField('name', e.target.value)
-                        }
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="hero-phone" className={labelClass}>
-                        Mobile number *
-                      </label>
-                      <div className="flex w-full min-w-0 overflow-hidden rounded-lg border border-slate-200 focus-within:border-emerald-700 focus-within:ring-2 focus-within:ring-emerald-700/10">
-                        <span className="flex shrink-0 items-center border-r border-slate-200 bg-slate-50 px-3 text-sm text-slate-500">
-                          +91
-                        </span>
-                        <input
-                          id="hero-phone"
-                          type="tel"
-                          required
-                          autoComplete="tel-national"
-                          inputMode="numeric"
-                          pattern="[0-9]{10}"
-                          maxLength={10}
-                          placeholder="9876543210"
-                          value={formData.mobile}
-                          onChange={(e) =>
-                            updateField(
-                              'mobile',
-                              e.target.value.replace(/\D/g, '').slice(0, 10)
-                            )
-                          }
-                          className="min-w-0 flex-1 bg-white px-3 py-2.5 sm:py-3 text-base sm:text-sm outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label htmlFor="hero-city" className={labelClass}>
-                        City / Pincode
-                      </label>
-                      <input
-                        id="hero-city"
-                        placeholder="Where is your property?"
-                        autoComplete="address-level2"
-                        value={formData.city}
-                        onChange={(e) =>
-                          updateField('city', e.target.value)
-                        }
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="hero-bill" className={labelClass}>
-                        Monthly electricity bill
-                      </label>
-                      <select
-                        id="hero-bill"
-                        value={formData.monthlyBill}
-                        onChange={(e) =>
-                          updateField('monthlyBill', e.target.value)
-                        }
-                        className={`${inputClass} truncate`}
-                      >
-                        <option value="Under ₹2,000">Under ₹2,000</option>
-                        <option value="₹2,000 - ₹5,000">
-                          ₹2,000 – ₹5,000
-                        </option>
-                        <option value="₹5,000 - ₹10,000">
-                          ₹5,000 – ₹10,000
-                        </option>
-                        <option value="₹10,000 - ₹25,000">
-                          ₹10,000 – ₹25,000
-                        </option>
-                        <option value="Above ₹25,000">Above ₹25,000</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label htmlFor="hero-property" className={labelClass}>
-                        Property type
-                      </label>
-                      <select
-                        id="hero-property"
-                        value={formData.propertyType}
-                        onChange={(e) =>
-                          updateField('propertyType', e.target.value)
-                        }
-                        className={`${inputClass} truncate`}
-                      >
-                        <option value="Residential Independent House / Villa">
-                          Independent house / Villa
-                        </option>
-                        <option value="Gated Society / Apartment Association">
-                          Apartment / Housing society
-                        </option>
-                        <option value="Commercial Office / Retail / Hospital">
-                          Commercial property
-                        </option>
-                        <option value="Industrial Factory / Warehouse">
-                          Factory / Warehouse
-                        </option>
-                        <option value="Agricultural Farmland / Solar Water Pump">
-                          Agricultural property
-                        </option>
-                      </select>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="flex min-h-12 w-full max-w-full items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-900 active:scale-[0.99] disabled:opacity-60"
-                    >
-                      <span className="truncate">
-                        {isSubmitting
-                          ? 'Submitting...'
-                          : 'Get My Solar Consultation'}
-                      </span>
-                      {!isSubmitting && (
-                        <ArrowRight className="h-4 w-4 shrink-0" />
-                      )}
-                    </button>
-
-                  </form>
-                )}
+                <ConsultationForm
+                  variant="compact"
+                  source="hero_section_quick_form"
+                  prefillNote={prefill}
+                  onInteraction={onFormInteraction}
+                />
               </div>
             </div>
           </div>
@@ -439,22 +201,18 @@ export default function HeroSection({
           </div>
         </div>
 
-        {/* Minimal brand strip */}
-        {/* Brand strip */}
-        <div className="flex flex-col gap-4 border-b border-slate-200 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium text-slate-700 sm:text-base">
-            Leading solar panel supplier &amp; installer in Lucknow for homes, businesses and farms.
-          </p>
-
-          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
+        {/* Brand strip (Hidden on phone view, visible only in site/desktop view) */}
+        <div className="hidden sm:flex items-center justify-between border-b border-slate-200 py-5">
+          <ul className="flex flex-wrap items-center justify-between w-full gap-x-6 gap-y-2 text-sm font-medium text-slate-700">
             {[
               'PM Surya Ghar subsidy support',
+              'PMFME subsidy support',
               'Free site visit',
               'Free consultation',
             ].map((item) => (
               <li key={item} className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
-                {item}
+                <span>{item}</span>
               </li>
             ))}
           </ul>

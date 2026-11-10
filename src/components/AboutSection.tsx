@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import {
@@ -7,7 +7,7 @@ import {
   Building2,
   FileText,
   Handshake,
-  ShieldCheck,
+  Landmark,
   Sun,
 } from 'lucide-react';
 
@@ -64,9 +64,7 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
             </h2>
 
             <p className="mt-3 max-w-xl text-base leading-7 text-slate-600 sm:mt-4 sm:text-lg sm:leading-8">
-              Luminix Solar, in association with A & V Agrivoltaics, is a registered solar company in Lucknow, working since 2024. We
-              install rooftop solar for homes, businesses and farms, and help you with the PM
-              Surya Ghar subsidy.
+              Luminix Solar, in association with A &amp; V Agrivoltaics, is a registered solar company based in Barabanki, UP, working since 2024. We install rooftop solar for homes, businesses, and commercial setups across Uttar Pradesh, offering complete subsidy assistance under both government schemes — <strong className="font-semibold text-slate-800">PM Surya Ghar: Muft Bijli Yojana (PMSG)</strong> for residential rooftops and the <strong className="font-semibold text-slate-800">PMFME Scheme</strong> (35% capital subsidy) for micro food processing enterprises.
             </p>
 
             {/* Desktop: buttons under the text */}
@@ -84,9 +82,9 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                     <Building2 className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
-                    <dt className="text-xs text-slate-500">Registered entity</dt>
+                    <dt className="text-xs text-slate-500">Registered entity &amp; base</dt>
                     <dd className="text-sm font-semibold text-slate-900 sm:text-base">
-                      Luminix Solar Pvt. Ltd.
+                      Luminix Solar Pvt. Ltd. (Barabanki, UP)
                     </dd>
                   </div>
                 </div>
@@ -98,7 +96,24 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                   <div className="min-w-0">
                     <dt className="text-xs text-slate-500">In association with</dt>
                     <dd className="text-sm font-semibold text-emerald-950 sm:text-base">
-                      A & V Agrivoltaics
+                      A &amp; V Agrivoltaics
+                    </dd>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3.5 py-3">
+                  <span className={rowIcon}>
+                    <Landmark className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <dt className="text-xs text-slate-500">Supported government schemes</dt>
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-900">
+                        PM Surya Ghar (PMSG)
+                      </span>
+                      <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-900">
+                        PMFME Scheme (35% Subsidy)
+                      </span>
                     </dd>
                   </div>
                 </div>
@@ -115,7 +130,7 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3.5 py-3">
+                <div className="flex items-center gap-3.5 pt-3">
                   <span className={rowIcon}>
                     <BadgeCheck className="h-4 w-4" />
                   </span>
@@ -123,25 +138,6 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                     <dt className="text-xs text-slate-500">MNRE vendor ID</dt>
                     <dd className="break-all text-sm font-semibold tracking-wide text-slate-900 sm:text-base">
                       MNRE/RTS/2023/8842
-                    </dd>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3.5 pt-3">
-                  <span className={rowIcon}>
-                    <ShieldCheck className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <dt className="text-xs text-slate-500">Certifications</dt>
-                    <dd className="mt-1 flex flex-wrap gap-2">
-                      {['ISO 9001:2015', 'ISO 14001:2015'].map((iso) => (
-                        <span
-                          key={iso}
-                          className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 sm:text-sm"
-                        >
-                          {iso}
-                        </span>
-                      ))}
                     </dd>
                   </div>
                 </div>
