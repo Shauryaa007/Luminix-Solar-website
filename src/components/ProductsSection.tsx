@@ -465,7 +465,7 @@ export default function ProductsSection({
   };
 
   return (
-    <section id="products" className="bg-white py-9 sm:py-14 lg:py-0 lg:pb-12">
+    <section id="products" className="bg-white py-9 sm:py-14 lg:py-0 lg:pb-12 md:mt-20">
       <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-7 lg:px-12">
         <div className="mx-auto max-w-6xl">
 

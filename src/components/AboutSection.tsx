@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import {
@@ -11,9 +11,10 @@ import {
   Sun,
 } from 'lucide-react';
 
+import { ConsultationPrefillData } from '@/components/ConsultationForm';
+
 interface AboutSectionProps {
-  /** Optional: same handler HeroSection uses. If missing, the button scrolls to the hero form. */
-  onOpenConsultation?: (prefill?: string) => void;
+  onOpenConsultation?: (prefill?: string | ConsultationPrefillData) => void;
 }
 
 export default function AboutSection({ onOpenConsultation }: AboutSectionProps = {}) {
@@ -29,7 +30,16 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
   const actions = (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       {onOpenConsultation ? (
-        <button type="button" onClick={() => onOpenConsultation()} className={primaryBtn}>
+        <button
+          type="button"
+          onClick={() =>
+            onOpenConsultation({
+              scheme: 'PMSG',
+              note: 'I would like to book a free site visit.',
+            })
+          }
+          className={primaryBtn}
+        >
           Book a free site visit
           <ArrowRight className="h-4 w-4 shrink-0" />
         </button>
@@ -74,7 +84,7 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
           {/* ---------- Credentials ---------- */}
           <div>
             <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xl shadow-emerald-950/5 sm:p-6">
-              <p className="text-sm font-semibold text-slate-900">Our credentials</p>
+              <p className="text-sm font-semibold text-slate-900">Registered & Verified</p>
 
               <dl className="mt-3 divide-y divide-slate-200">
                 <div className="flex items-center gap-3.5 py-3">

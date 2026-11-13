@@ -109,10 +109,10 @@ export default function Home() {
         <BenefitsSection />
 
         {/* Section 5: About Company, GSTIN, Authorised Brands & 5-Step Process */}
-        <AboutSection />
+        <AboutSection onOpenConsultation={handleOpenConsultation} />
 
         {/* Section 1/5/7: Full Consultation & Contact Details */}
-        <ContactSection />
+        {/* <ContactSection /> */}
 
         {/* Section 7: FAQs & Catalogue Downloads */}
         {/* <FaqSection /> */}

@@ -33,14 +33,14 @@ const CARDS: Card[] = [
     img: '/images/hero-solar.jpg',
     featured: true,
   },
-  {
-    id: 'backup',
-    tag: 'Backup',
-    title: 'Light during power cuts',
-    text: 'Add a hybrid inverter and battery to keep lights, fans and other important things running.',
-    chips: ['Hybrid inverter', 'Battery backup', 'Keeps key appliances on'],
-    img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85',
-  },
+  // {
+  //   id: 'backup',
+  //   tag: 'Backup',
+  //   title: 'Light during power cuts',
+  //   text: 'Add a hybrid inverter and battery to keep lights, fans and other important things running.',
+  //   chips: ['Hybrid inverter', 'Battery backup', 'Keeps key appliances on'],
+  //   img: 'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2000&q=85',
+  // },
   {
     id: 'property',
     tag: 'Homes & business',
@@ -187,8 +187,7 @@ export default function BenefitsSection() {
             <span className="font-semibold text-emerald-700">solar panels?</span>
           </h2>
           <p className="mt-3 max-w-xl text-base leading-7 text-slate-600">
-            Save money, get subsidy and stay powered. Swipe to see what solar
-            gives you.
+            Save money, get subsidy and stay powered. 
           </p>
 
           <div

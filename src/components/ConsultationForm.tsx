@@ -703,34 +703,31 @@ export default function ConsultationForm({
       {/* 3. PANEL COMPANY (Clean modern selector)                           */}
       {/* ------------------------------------------------------------------ */}
       <div>
-        <label className={labelClass}>
+        <label htmlFor="consult-panel" className={labelClass}>
           Panel Company Preference <span className="text-rose-500 font-bold">*</span>
         </label>
-        <div
-          className={`grid grid-cols-5 gap-1.5 transition ${errorField === 'panelCompany' ? 'p-1 rounded-lg border border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20' : ''
+        <select
+          id="consult-panel"
+          required
+          value={panelCompany}
+          onFocus={handleInteraction}
+          onChange={(e) => {
+            setPanelCompany(e.target.value);
+            if (e.target.value !== 'OTHERS') setPanelCompanyOther('');
+            clearErrors();
+          }}
+          className={`${getInputClass('panelCompany')} truncate ${!panelCompany ? 'text-slate-400 font-medium' : 'text-slate-800'
             }`}
         >
-          {PANEL_COMPANIES.map((company) => {
-            const active = panelCompany === company;
-            return (
-              <button
-                key={company}
-                type="button"
-                onClick={() => {
-                  handleInteraction();
-                  setPanelCompany(company);
-                  clearErrors();
-                }}
-                className={`rounded-lg py-2 text-xs font-bold transition text-center border ${active
-                  ? 'border-emerald-800 bg-emerald-800 text-white shadow-xs'
-                  : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
-                  }`}
-              >
-                {company}
-              </button>
-            );
-          })}
-        </div>
+          <option value="" disabled>
+            - Select Panel Company -
+          </option>
+          {PANEL_COMPANIES.map((company) => (
+            <option key={company} value={company} className="text-slate-800">
+              {company}
+            </option>
+          ))}
+        </select>
 
         {/* Manual Writing Box if OTHERS selected */}
         {panelCompany === 'OTHERS' && (
@@ -839,34 +836,30 @@ export default function ConsultationForm({
 
           {/* System Type: On-Grid, Off-Grid, Hybrid */}
           <div>
-            <label className={labelClass}>
+            <label htmlFor="consult-system-type" className={labelClass}>
               System Type <span className="text-rose-500 font-bold">*</span>
             </label>
-            <div
-              className={`grid grid-cols-3 gap-1.5 transition ${errorField === 'systemType' ? 'p-1 rounded-lg border border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/20' : ''
+            <select
+              id="consult-system-type"
+              required
+              value={systemType}
+              onFocus={handleInteraction}
+              onChange={(e) => {
+                setSystemType(e.target.value);
+                clearErrors();
+              }}
+              className={`${getInputClass('systemType')} truncate ${!systemType ? 'text-slate-400 font-medium' : 'text-slate-800'
                 }`}
             >
-              {SYSTEM_TYPES.map((type) => {
-                const active = systemType === type;
-                return (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => {
-                      handleInteraction();
-                      setSystemType(type);
-                      clearErrors();
-                    }}
-                    className={`rounded-lg py-2 text-xs font-bold transition text-center border ${active
-                      ? 'border-emerald-800 bg-emerald-800 text-white shadow-xs'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
-                      }`}
-                  >
-                    {type}
-                  </button>
-                );
-              })}
-            </div>
+              <option value="" disabled>
+                - Select System Type -
+              </option>
+              {SYSTEM_TYPES.map((type) => (
+                <option key={type} value={type} className="text-slate-800">
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Property Type Dropdown */}
