@@ -25,13 +25,10 @@ interface NavbarProps {
 const navLinks = [
   { name: 'Home', href: '#home' },
   { name: 'Projects', href: '#projects' },
-  // { name: 'Products', href: '#products' },
   { name: 'Savings', href: '#calculator' },
   { name: 'Benefits', href: '#benefits' },
   { name: 'About', href: '#about' },
-  // { name: 'Reviews', href: '#testimonials' },
-  { name: 'Contact', href: '#contact' },
-  // { name: 'FAQ', href: '#faq' },
+  { name: 'FAQ', href: '#faq' },
 ];
 
 export default function Navbar({
@@ -39,6 +36,7 @@ export default function Navbar({
 }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('home');
 
   const whatsappUrl = `https://wa.me/${String(
     COMPANY_INFO.whatsapp
@@ -55,6 +53,44 @@ export default function Navbar({
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Track active section via scroll position
+  useEffect(() => {
+    const sectionIds = navLinks.map((link) => link.href.replace('#', ''));
+
+    const handleScrollSpy = () => {
+      const scrollPosition = window.scrollY + 120;
+      const isAtBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 60;
+
+      if (isAtBottom) {
+        const lastSection = sectionIds[sectionIds.length - 1];
+        if (lastSection) {
+          setActiveSection(lastSection);
+          return;
+        }
+      }
+
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const id = sectionIds[i];
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          const elementTop = window.scrollY + rect.top;
+          if (scrollPosition >= elementTop - 20) {
+            setActiveSection(id);
+            return;
+          }
+        }
+      }
+
+      setActiveSection('home');
+    };
+
+    handleScrollSpy();
+    window.addEventListener('scroll', handleScrollSpy, { passive: true });
+    return () => window.removeEventListener('scroll', handleScrollSpy);
   }, []);
 
   useEffect(() => {
@@ -148,16 +184,26 @@ export default function Navbar({
           </a>
 
           {/* Desktop navigation */}
-          <div className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 xl:flex 2xl:gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="whitespace-nowrap rounded-lg px-2.5 py-2 text-[12px] font-semibold text-slate-600 transition-colors duration-200 hover:bg-emerald-50 hover:text-emerald-800 2xl:px-3 2xl:text-[13px]"
-              >
-                {link.name}
-              </a>
-            ))}
+          <div className="hidden min-w-0 flex-1 items-center justify-center gap-1 xl:flex 2xl:gap-1.5">
+            {navLinks.map((link) => {
+              const sectionId = link.href.replace('#', '');
+              const isActive = activeSection === sectionId;
+
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={() => setActiveSection(sectionId)}
+                  className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-[12px] transition-all duration-200 2xl:px-3.5 2xl:py-2 2xl:text-[13px] ${
+                    isActive
+                      ? 'border border-emerald-200/90 bg-emerald-50 text-emerald-900 font-bold shadow-xs'
+                      : 'border border-transparent font-medium text-slate-600 hover:bg-emerald-50/50 hover:text-emerald-800'
+                  }`}
+                >
+                  {link.name}
+                </a>
+              );
+            })}
           </div>
 
           {/* Desktop actions */}
@@ -224,23 +270,43 @@ export default function Navbar({
                   Explore LuminixSolar
                 </p>
 
-                <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                  {navLinks.map((link, index) => (
-                    <a
-                      key={link.name}
-                      href={link.href}
-                      onClick={closeMobileMenu}
-                      className="group flex min-h-11 items-center justify-between rounded-xl px-3.5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-800"
-                    >
-                      <span className="flex items-center gap-3">
-                        {/* <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-50 text-[10px] font-bold text-slate-400 transition group-hover:bg-white group-hover:text-emerald-700">
-                          {String(index + 1).padStart(2, '0')}
-                        </span> */}
-                        {link.name}
-                      </span>
-                      <ArrowRight className="h-4 w-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-emerald-700" />
-                    </a>
-                  ))}
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  {navLinks.map((link) => {
+                    const sectionId = link.href.replace('#', '');
+                    const isActive = activeSection === sectionId;
+
+                    return (
+                      <a
+                        key={link.name}
+                        href={link.href}
+                        onClick={() => {
+                          setActiveSection(sectionId);
+                          closeMobileMenu();
+                        }}
+                        className={`group flex min-h-11 items-center justify-between rounded-xl px-3.5 py-3 text-sm transition ${
+                          isActive
+                            ? 'border border-emerald-200/90 bg-emerald-50 font-bold text-emerald-900 shadow-xs'
+                            : 'border border-transparent font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                              isActive ? 'bg-emerald-600' : 'bg-transparent'
+                            }`}
+                          />
+                          {link.name}
+                        </span>
+                        <ArrowRight
+                          className={`h-4 w-4 transition-transform ${
+                            isActive
+                              ? 'translate-x-0.5 text-emerald-700'
+                              : 'text-slate-300 group-hover:translate-x-0.5 group-hover:text-emerald-700'
+                          }`}
+                        />
+                      </a>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-4 grid gap-2 border-t border-slate-100 pt-4 sm:grid-cols-2">

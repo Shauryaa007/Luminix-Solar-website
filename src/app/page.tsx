@@ -115,7 +115,7 @@ export default function Home() {
         {/* <ContactSection /> */}
 
         {/* Section 7: FAQs & Catalogue Downloads */}
-        {/* <FaqSection /> */}
+        <FaqSection onOpenConsultation={handleOpenConsultation} />
 
         <Footer />
         {/* Section Coming Soon - temporary */}

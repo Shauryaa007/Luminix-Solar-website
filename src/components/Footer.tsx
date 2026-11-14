@@ -1,6 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import Image from 'next/image';
-import { ChevronDown, Navigation, Phone } from 'lucide-react';
+import { ChevronDown, Mail, Navigation, Phone } from 'lucide-react';
 import { COMPANY_INFO } from '@/data/solarData';
 
 /* -------------------------------------------------------------------------- */
@@ -13,7 +13,7 @@ const QUICK_LINKS = [
   { label: 'Our projects', href: '#projects' },
   { label: 'Benefits', href: '#benefits' },
   { label: 'About us', href: '#about' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'FAQ', href: '#faq' },
 ];
 
 const LEGAL_LINKS = [
@@ -57,7 +57,7 @@ export default function Footer() {
   const year = 2026;
 
   return (
-    <footer className="w-full bg-[#102E24] text-white">
+    <footer id="contact" className="w-full bg-[#102E24] text-white">
       <div className="mx-auto w-full px-5 py-12 sm:px-8 sm:py-14 lg:px-12">
         <div className="mx-auto max-w-[1400px]">
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
@@ -83,15 +83,24 @@ export default function Footer() {
                 </span>
               </a>
 
-              <div>
+              <div className="space-y-2">
                 <p className="text-xs text-white/60">Talk to our team</p>
-                <a
-                  href={`tel:${COMPANY_INFO.phone}`}
-                  className="mt-1 inline-flex items-center gap-2 text-lg font-semibold text-white transition-colors hover:text-emerald-300"
-                >
-                  <Phone className="h-4 w-4 shrink-0 text-emerald-300" />
-                  {COMPANY_INFO.phoneDisplay}
-                </a>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={`tel:${COMPANY_INFO.phone}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-emerald-300"
+                  >
+                    <Phone className="h-4 w-4 shrink-0 text-emerald-300" />
+                    {COMPANY_INFO.phoneDisplay}
+                  </a>
+                  <a
+                    href={`mailto:${COMPANY_INFO.email}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-emerald-300 break-all"
+                  >
+                    <Mail className="h-4 w-4 shrink-0 text-emerald-300" />
+                    {COMPANY_INFO.email}
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -116,7 +125,7 @@ export default function Footer() {
             <div className="lg:col-span-5">
               <p className="text-sm font-bold tracking-wide">Our offices</p>
 
-              <div className="mt-4 divide-y divide-white/15 border-y border-white/15">
+              <div className="mt-4 divide-y divide-white/15 border-t border-white/15">
                 {OFFICES.map((office) => (
                   <details key={office.name} className="group">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-medium text-white/85 transition-colors hover:text-emerald-300 [&::-webkit-details-marker]:hidden">

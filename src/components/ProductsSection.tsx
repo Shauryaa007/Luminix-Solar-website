@@ -551,8 +551,8 @@ export default function ProductsSection({
             
           </div>
 
-          {/* SOLAR PRODUCTS */}
-          <div className="mt-10 sm:mt-16">
+          {/* SOLAR PRODUCTS / Our solutions (Commented out) */}
+          {/* <div className="mt-10 sm:mt-16">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 sm:text-xs">
                 Our solutions
@@ -562,7 +562,6 @@ export default function ProductsSection({
               </h3>
             </div>
 
-            {/* Cards: auto-sliding one at a time on mobile, three columns from 640px up */}
             <div className="mt-4">
               <div
                 ref={products.ref}
@@ -570,11 +569,9 @@ export default function ProductsSection({
                 className="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-3 sm:gap-5 sm:overflow-visible"
               >
                 {PRODUCTS.map((product) => renderProductCard(product))}
-                {/* Duplicate of the first card for the seamless loop (mobile only) */}
                 {renderProductCard(PRODUCTS[0], true)}
               </div>
 
-              {/* Position dots (mobile only, not clickable) */}
               <div
                 className="mt-3 flex items-center justify-center gap-2 sm:hidden"
                 aria-hidden="true"
@@ -591,7 +588,7 @@ export default function ProductsSection({
                 ))}
               </div>
             </div>
-          </div>
+          </div> */}
 
         </div>
       </div>
