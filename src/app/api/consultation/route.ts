@@ -23,6 +23,15 @@ export async function POST(request: NextRequest) {
       source,
     } = body;
 
+    // 0. Anti-bot honeypot check (silently drop bot spam)
+    if (body.companyWebsiteUrl && typeof body.companyWebsiteUrl === 'string' && body.companyWebsiteUrl.trim() !== '') {
+      console.warn('[Consultation API] Bot submission blocked via honeypot.');
+      return NextResponse.json(
+        { success: true, message: 'Your solar consultation request has been received.', sheetSynced: false },
+        { status: 200 }
+      );
+    }
+
     // 1. Validate full name (mandatory)
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
       return NextResponse.json(
@@ -161,15 +170,22 @@ export async function POST(request: NextRequest) {
     const leadData = {
       name: name.trim(),
       mobile: sanitizedMobile,
-      email: typeof email === 'string' && email.trim() ? email.trim() : null,
-      city: resolvedLocation || null,
-      monthlyBill: resolvedBillOrCapacity,
-      propertyType: resolvedPropertyOrBusiness,
-      requirement: schemeNotes,
+      city: typeof city === 'string' && city.trim() ? city.trim() : null,
+      pincode: sanitizedPincode || null,
+      scheme: scheme || 'PMSG',
+      propertyType: propertyType || null,
+      businessType: businessType ? businessType.trim() : null,
+      selectionMode: scheme === 'PMSG' ? selectionMode || 'bill' : 'capacity',
+      monthlyBill: scheme === 'PMSG' && selectionMode === 'bill' ? monthlyBill : null,
+      capacity: capacity || null,
+      panelCompany: panelCompany === 'OTHERS' ? 'Other' : panelCompany || null,
+      panelCompanyOther: panelCompany === 'OTHERS' && panelCompanyOther ? panelCompanyOther.trim() : null,
+      systemType: systemType || null,
+      requirement: requirement ? requirement.trim() : null,
       source: typeof source === 'string' && source.trim() ? source.trim() : 'website_form',
     };
 
-    // Append lead to Google Sheets
+    // Append lead to Google Sheets (via Service Account or Webhook)
     const sheetResult = await appendLeadToGoogleSheet(leadData);
 
     if (!sheetResult.success && !sheetResult.skipped) {
@@ -180,6 +196,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         message: 'Your solar consultation request has been received.',
+        sheetSynced: sheetResult.success,
         lead: {
           id: `lead_${Date.now()}`,
           ...leadData,
@@ -198,16 +215,22 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  const isSheetConfigured = Boolean(
+  const isServiceAccountConfigured = Boolean(
     process.env.GOOGLE_SHEET_ID &&
     process.env.GOOGLE_CLIENT_EMAIL &&
     process.env.GOOGLE_PRIVATE_KEY
   );
+  const isWebhookConfigured = Boolean(process.env.GOOGLE_SHEET_WEBHOOK_URL);
 
   return NextResponse.json({
     status: 'online',
     service: 'Luminix Solar Consultation API',
-    googleSheetsConnected: isSheetConfigured,
+    googleSheetsConnected: isServiceAccountConfigured || isWebhookConfigured,
+    method: isWebhookConfigured
+      ? 'webhook'
+      : isServiceAccountConfigured
+      ? 'service_account'
+      : 'unconfigured',
     timestamp: new Date().toISOString(),
   });
 }

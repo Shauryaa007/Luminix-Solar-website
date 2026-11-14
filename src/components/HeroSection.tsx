@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   ArrowRight,
-  CheckCircle2,
   Leaf,
   Sun,
   Zap,
@@ -201,22 +200,6 @@ export default function HeroSection({
           </div>
         </div>
 
-        {/* Brand strip (Hidden on phone view, visible only in site/desktop view) */}
-        <div className="hidden sm:flex items-center justify-between border-b border-slate-200 py-5">
-          <ul className="flex flex-wrap items-center justify-between w-full gap-x-6 gap-y-2 text-sm font-medium text-slate-700">
-            {[
-              'PM Surya Ghar subsidy support',
-              'PMFME subsidy support',
-              'Free site visit',
-              'Free consultation',
-            ].map((item) => (
-              <li key={item} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-700" />
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </section>
   );

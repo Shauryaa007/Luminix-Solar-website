@@ -227,6 +227,7 @@ export default function ConsultationForm({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [errorField, setErrorField] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState('');
 
   useEffect(() => {
     const data = parsePrefillData(prefillData || prefillNote);
@@ -391,6 +392,7 @@ export default function ConsultationForm({
         propertyType: activeScheme === 'PMSG' ? propertyType : undefined,
         businessType: activeScheme === 'PMFME' ? businessType.trim() : undefined,
         requirement: requirementNote.trim() || undefined,
+        companyWebsiteUrl: honeypot || undefined,
         source,
       };
 
@@ -438,6 +440,7 @@ export default function ConsultationForm({
     setIsSubmitted(false);
     setErrorMessage(null);
     setErrorField(null);
+    setHoneypot('');
   };
 
   // Shared responsive classes compliant with rules (text-base sm:text-sm to prevent iOS zoom)
@@ -501,6 +504,17 @@ export default function ConsultationForm({
   // ------------------------------------------------------------------------
   return (
     <form onSubmit={handleSubmit} className={`space-y-3.5 ${className}`}>
+      {/* Anti-spam honeypot - invisible to legitimate users */}
+      <div className="hidden" aria-hidden="true" tabIndex={-1}>
+        <input
+          type="text"
+          name="companyWebsiteUrl"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
       {/* ------------------------------------------------------------------ */}
       {/* 1. SCHEME SELECTOR (Clean Segmented Tabs)                          */}
       {/* ------------------------------------------------------------------ */}
@@ -985,13 +999,6 @@ export default function ConsultationForm({
         {!isSubmitting && <ArrowRight className="h-4 w-4 shrink-0" />}
       </button>
 
-      {/* Trust & Guarantee line */}
-      <div className="pt-0.5 text-center">
-        <p className="text-[11px] text-slate-500 flex items-center justify-center gap-1.5">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 shrink-0" />
-          <span>100% Free Site Survey & Government Subsidy Assistance</span>
-        </p>
-      </div>
     </form>
   );
 }

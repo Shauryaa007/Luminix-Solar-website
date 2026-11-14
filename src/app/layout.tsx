@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Luminix Solar | Rooftop Solar Installation & PM Surya Ghar Subsidy in Lucknow & UP",
+    default: "Luminix Solar | Rooftop Solar Installation & PM Surya Ghar and PMFME Subsidy in Lucknow & UP",
     template: "%s | Luminix Solar",
   },
   description:
@@ -84,7 +84,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/icon.png",
   },
 };
 
