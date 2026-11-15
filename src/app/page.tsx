@@ -14,13 +14,56 @@ import FaqSection from '@/components/FaqSection';
 import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 import ConsultationModal from '@/components/ConsultationModal';
+import { ConsultationPrefillData } from '@/components/ConsultationForm';
 import FloatingActions from '@/components/FloatingActions';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalPrefill, setModalPrefill] = useState<string>('');
+  const [modalPrefill, setModalPrefill] = useState<string | ConsultationPrefillData>('');
+  const [hasInteractedWithHero, setHasInteractedWithHero] = useState(false);
 
-  const handleOpenConsultation = (prefill?: string) => {
+  const hasInteractedWithHeroRef = React.useRef(false);
+  const hasDismissedRef = React.useRef(false);
+  const triggeredRef = React.useRef(false);
+
+  // Sync ref with state
+  React.useEffect(() => {
+    hasInteractedWithHeroRef.current = hasInteractedWithHero;
+  }, [hasInteractedWithHero]);
+
+  // Mobile Popup: Triggers on mobile after 5 seconds
+  // ONLY IF user hasn't started filling the hero form, and hasn't closed it in this view.
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Clear any previous session storage lock from prior testing
+    try {
+      sessionStorage.removeItem('luminix_consultation_dismissed');
+    } catch {
+      // ignore
+    }
+
+    const triggerPopup = () => {
+      if (triggeredRef.current) return;
+      if (hasDismissedRef.current) return;
+      if (hasInteractedWithHeroRef.current) return;
+      if (window.innerWidth >= 768) return;
+
+      triggeredRef.current = true;
+      setIsModalOpen(true);
+    };
+
+    // Time-based trigger: exactly 5 seconds
+    const timer = window.setTimeout(() => {
+      triggerPopup();
+    }, 5000);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, []);
+
+  const handleOpenConsultation = (prefill?: string | ConsultationPrefillData) => {
     setModalPrefill(prefill || '');
     setIsModalOpen(true);
   };
@@ -28,6 +71,7 @@ export default function Home() {
   const handleCloseConsultation = () => {
     setIsModalOpen(false);
     setModalPrefill('');
+    hasDismissedRef.current = true;
   };
 
   return (
@@ -40,13 +84,20 @@ export default function Home() {
       <main className="flex-1">
 
         {/* Section 1: Hero Banner & Quick Form */}
-        <HeroSection onOpenConsultation={handleOpenConsultation} />
+        <HeroSection
+          onOpenConsultation={handleOpenConsultation}
+          onFormInteraction={() => setHasInteractedWithHero(true)}
+          prefill={modalPrefill}
+        />
 
-        {/* Section 6: Company Highlights & Key Numbers Counter */}
+        {/* Metric Section */}
         <StatsSection />
 
-        {/* Section: Completed Installations Gallery */}
-        <CompletedProjectsSection />
+        {/* Our Work: Completed Installations Gallery */}
+        <CompletedProjectsSection onOpenConsultation={handleOpenConsultation} />
+
+        {/* Solar Made Affordable & Products Section */}
+        <ProductsSection onOpenConsultation={handleOpenConsultation} />
 
         {/* Section 4: Benefits & Interactive Solar Savings ROI Calculator */}
         <SolarCalculator onApplyForCapacity={handleOpenConsultation} />
@@ -58,15 +109,13 @@ export default function Home() {
         <BenefitsSection />
 
         {/* Section 5: About Company, GSTIN, Authorised Brands & 5-Step Process */}
-        <AboutSection />
-
-
-
-        {/* Section 7: FAQs & Catalogue Downloads */}
-        {/* <FaqSection /> */}
+        <AboutSection onOpenConsultation={handleOpenConsultation} />
 
         {/* Section 1/5/7: Full Consultation & Contact Details */}
-        <ContactSection />
+        {/* <ContactSection /> */}
+
+        {/* Section 7: FAQs & Catalogue Downloads */}
+        <FaqSection onOpenConsultation={handleOpenConsultation} />
 
         <Footer />
         {/* Section Coming Soon - temporary */}
@@ -79,11 +128,11 @@ export default function Home() {
       {/* Footer */}
 
       {/* Global Consultation Booking Modal */}
-      {/* <ConsultationModal
+      <ConsultationModal
         isOpen={isModalOpen}
         onClose={handleCloseConsultation}
         prefillNote={modalPrefill}
-      /> */}
+      />
 
       {/* Floating Action Buttons (WhatsApp, Phone, Scroll To Top) */}
       <FloatingActions />

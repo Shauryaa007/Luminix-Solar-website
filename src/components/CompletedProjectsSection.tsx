@@ -221,7 +221,7 @@ export default function CompletedProjectsSection({
   return (
     <section
       id="projects"
-      className="relative overflow-hidden bg-[#F5F8F3] py-20 sm:py-24 lg:py-28"
+      className="relative overflow-hidden bg-[#F5F8F3] py-20 sm:py-24 lg:py-20"
     >
       <div className="pointer-events-none absolute -right-40 top-20 h-96 w-96 rounded-full bg-emerald-100/50 blur-3xl" />
       <div className="pointer-events-none absolute -left-40 top-[45%] h-96 w-96 rounded-full bg-teal-50 blur-3xl" />

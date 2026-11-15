@@ -1,6 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import Image from 'next/image';
-import { MapPin, Phone } from 'lucide-react';
+import { ChevronDown, Mail, Navigation, Phone } from 'lucide-react';
 import { COMPANY_INFO } from '@/data/solarData';
 
 /* -------------------------------------------------------------------------- */
@@ -13,7 +13,7 @@ const QUICK_LINKS = [
   { label: 'Our projects', href: '#projects' },
   { label: 'Benefits', href: '#benefits' },
   { label: 'About us', href: '#about' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'FAQ', href: '#faq' },
 ];
 
 const LEGAL_LINKS = [
@@ -21,26 +21,58 @@ const LEGAL_LINKS = [
   { label: 'Terms & Conditions', href: '/terms' },
 ];
 
+type Office = {
+  name: string;
+  address?: string;
+  phones: string[];
+  mapsUrl?: string;
+};
+
+const OFFICES: Office[] = [
+  {
+    name: 'Head office, Barabanki',
+    address: 'MP-2824, Dashrabagh, Makhdumpur Road, Barabanki (225001)',
+    phones: ['8127554008'],
+  },
+  {
+    name: 'Alamnagar branch',
+    address: 'Kanak City Saripura Road, Alam Nagar, Near by Shukla Timber, 226017',
+    phones: ['9793078997'],
+    mapsUrl: 'https://www.google.com/maps?q=26.8503425,80.8632709&z=17&hl=en',
+  },
+  {
+    name: 'Indira Nagar branch',
+    address: 'North City Manas Enclave, Picnic spot road, near City International school, Indira nagar, Lucknow, 226016',
+    phones: ['7355464235'],
+    mapsUrl: 'https://www.google.com/maps/search/Amaan%20Market/@26.90060395,81.00299439,17z?hl=en',
+  },
+   // {
+  //   name: 'Bijnaur office, Lucknow',
+  //   address: 'Subhash Hotel, Mati, Bijnaur Road, Lucknow (226002)',
+  //   phones: ['9793078997', '8127554008'],
+  // },
+];
+
+const formatPhone = (digits: string) => `${digits.slice(0, 5)} ${digits.slice(5)}`;
+
+const mapsLink = (address: string) =>
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
 export default function Footer() {
   const year = 2026;
 
   return (
-    <footer className="w-full bg-[#102E24] text-white">
-
-      <div className="mx-auto w-full px-5 py-12 sm:px-8 sm:py-14 lg:px-12 lg:py-16">
-
+    <footer id="contact" className="w-full bg-[#102E24] text-white">
+      <div className="mx-auto w-full px-5 py-12 sm:px-8 sm:py-14 lg:px-12">
         <div className="mx-auto max-w-[1400px]">
-
-          {/* Top Section */}
-          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12 lg:gap-12">
-
-            {/* Brand */}
-            <div className="sm:col-span-2 lg:col-span-5">
-
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+            {/* Brand + call */}
+            {/* Brand + call */}
+            <div className="flex flex-col items-start gap-5 lg:col-span-4">
               <a
                 href="#home"
                 aria-label="LuminixSolar home"
-                className="inline-flex items-center gap-3"
+                className="flex w-fit items-center gap-3"
               >
                 <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white">
                   <Image
@@ -51,131 +83,106 @@ export default function Footer() {
                     className="object-contain p-1"
                   />
                 </span>
-
-                <span className="text-[21px] font-extrabold tracking-tight text-white">
+                <span className="text-[21px] font-extrabold tracking-tight">
                   Luminix<span className="text-emerald-300">Solar</span>
                 </span>
               </a>
 
-              <p className="mt-5 max-w-sm text-sm leading-7 text-white/70 sm:text-[15px]">
-                Rooftop solar for homes, businesses and farms in Lucknow.
-                Making clean energy accessible and affordable.
-              </p>
-
+              <div className="space-y-2">
+                <p className="text-xs text-white/60">Talk to our team</p>
+                <div className="flex flex-col gap-2">
+                  <a
+                    href={`tel:${COMPANY_INFO.phone}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-emerald-300"
+                  >
+                    <Phone className="h-4 w-4 shrink-0 text-emerald-300" />
+                    {COMPANY_INFO.phoneDisplay}
+                  </a>
+                  <a
+                    href={`mailto:${COMPANY_INFO.email}`}
+                    className="inline-flex items-center gap-2 text-sm font-medium text-white/85 transition-colors hover:text-emerald-300 break-all"
+                  >
+                    <Mail className="h-4 w-4 shrink-0 text-emerald-300" />
+                    {COMPANY_INFO.email}
+                  </a>
+                </div>
+              </div>
             </div>
 
-            {/* Quick Links */}
-            <nav
-              aria-label="Footer navigation"
-              className="lg:col-span-3"
-            >
-
-              <p className="text-sm font-bold tracking-wide text-white">
-                Quick links
-              </p>
-
-              <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3 lg:grid-cols-1">
-
+            {/* Quick links */}
+            <nav aria-label="Footer navigation" className="lg:col-span-3">
+              <p className="text-sm font-bold tracking-wide">Quick links</p>
+              <ul className="mt-4 grid grid-cols-2 gap-x-5 gap-y-3 lg:grid-cols-1">
                 {QUICK_LINKS.map((link) => (
                   <li key={link.href}>
                     <a
                       href={link.href}
-                      className="text-sm text-white/65 transition-colors duration-200 hover:text-emerald-300"
+                      className="text-sm text-white/65 transition-colors hover:text-emerald-300"
                     >
                       {link.label}
                     </a>
                   </li>
                 ))}
-
               </ul>
-
             </nav>
 
-            {/* Contact */}
-            <div className="lg:col-span-4">
+            {/* Offices (click to open) */}
+            <div className="lg:col-span-5">
+              <p className="text-sm font-bold tracking-wide">Our offices</p>
 
-              <p className="text-sm font-bold tracking-wide text-white">
-                Talk to us
-              </p>
+              <div className="mt-4 divide-y divide-white/15 border-t border-white/15">
+                {OFFICES.map((office) => (
+                  <details key={office.name} className="group">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-3 text-sm font-medium text-white/85 transition-colors hover:text-emerald-300 [&::-webkit-details-marker]:hidden">
+                      {office.name}
+                      <ChevronDown className="h-4 w-4 shrink-0 text-white/60 transition-transform duration-200 group-open:rotate-180" />
+                    </summary>
 
-              <a
-                href={`tel:${COMPANY_INFO.phone}`}
-                className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-5 py-3 text-sm font-bold text-[#153D2D] transition-colors duration-200 hover:bg-emerald-100 active:scale-[0.99]"
-              >
-                <Phone className="h-4 w-4 shrink-0" />
-                Call {COMPANY_INFO.phoneDisplay}
-              </a>
+                    <div className="pb-4 text-sm leading-6 text-white/65">
+                      {office.address && <p>{office.address}</p>}
 
-              <p className="mt-4 flex items-start gap-2 text-sm leading-6 text-white/70">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1">
+                        {office.phones.map((p) => (
+                          <a
+                            key={p}
+                            href={`tel:+91${p}`}
+                            className="inline-flex items-center gap-1.5 font-semibold text-white hover:text-emerald-300"
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                            {formatPhone(p)}
+                          </a>
+                        ))}
 
-                <MapPin className="mt-1 h-4 w-4 shrink-0 text-emerald-300" />
-
-                <span>
-                  Offices in Barabanki and Lucknow.{' '}
-                  <a
-                    href="#contact"
-                    className="font-semibold text-white transition-colors hover:text-emerald-300"
-                  >
-                    See all
-                  </a>
-                </span>
-
-              </p>
-
+                        {office.address && (
+                          <a
+                            href={office.mapsUrl || mapsLink(office.address)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 font-semibold text-emerald-300 hover:underline"
+                          >
+                            <Navigation className="h-3.5 w-3.5" />
+                            Directions
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </details>
+                ))}
+              </div>
             </div>
-
           </div>
 
-          {/* Bottom Section */}
-          <div className="mt-12 border-t border-white/15 pt-7 sm:mt-14 sm:pt-8">
-
-            <p className="text-xs leading-6 text-white/60">
-              <span className="font-semibold text-white/80">
-                Luminix Solar Pvt. Ltd.
-              </span>
-              &nbsp;·&nbsp;
-              GSTIN 09CCVPV0642N1ZM
-              &nbsp;·&nbsp;
-              ISO 9001:2015 &amp; ISO 14001:2015 certified
+          {/* Bottom bar */}
+          <div className="mt-12 flex flex-col gap-3 border-t border-white/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs leading-5 text-white/60">
+              © {year} Luminix Solar Pvt. Ltd. in association with A &amp; V Agrivoltaics. All
+              rights reserved.
             </p>
 
-            <p className="mt-2 max-w-3xl text-xs leading-6 text-white/50">
-              Savings and subsidy amounts depend on your location,
-              electricity connection and government rules.
-            </p>
-
-            {/* Copyright and Legal Links */}
-            <div className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-5 sm:flex-row sm:items-center sm:justify-between">
-
-              <p className="text-xs leading-5 text-white/60">
-                © {year} Luminix Solar Pvt. Ltd. All rights reserved.
-              </p>
-
-              {LEGAL_LINKS.length > 0 && (
-                <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
-
-                  {LEGAL_LINKS.map((link) => (
-                    <li key={link.href}>
-                      <a
-                        href={link.href}
-                        className="text-xs text-white/60 transition-colors duration-200 hover:text-emerald-300"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
-
-                </ul>
-              )}
-
-            </div>
 
           </div>
-
         </div>
-
       </div>
-
     </footer>
   );
 }

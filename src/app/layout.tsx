@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Luminix Solar | Rooftop Solar Installation & PM Surya Ghar Subsidy in Lucknow & UP",
+    default: "Luminix Solar | Rooftop Solar Installation & PM Surya Ghar and PMFME Subsidy in Lucknow & UP",
     template: "%s | Luminix Solar",
   },
   description:
@@ -84,7 +84,13 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
   },
 };
 
@@ -99,7 +105,7 @@ const jsonLd = {
       logo: `${siteUrl}/images/logo.png`,
       image: `${siteUrl}/images/hero-solar.jpg`,
       description:
-        "Leading rooftop solar installation partner in Lucknow and Barabanki, Uttar Pradesh. Empanelled under MNRE PM Surya Ghar Muft Bijli Yojana providing turnkey solar systems with up to 90% bill savings.",
+        "Leading rooftop solar installation partner in Lucknow and Barabanki, Uttar Pradesh, in association with A & V Agrivoltaics. Empanelled under MNRE PM Surya Ghar Muft Bijli Yojana providing turnkey solar systems with up to 90% bill savings.",
       telephone: "+91-9793078997",
       email: "luminixsolar2025@gmail.com",
       priceRange: "₹₹",

@@ -1,4 +1,4 @@
-import { StaticImageData } from 'next/image';
+﻿import { StaticImageData } from 'next/image';
 import img1 from './completed-project/img1.jpg';
 import img2 from './completed-project/img2.jpg';
 import img3 from './completed-project/img3.jpg';
@@ -66,12 +66,13 @@ export const COMPANY_INFO = {
   establishedYear: 2024,
   yearsOfExperience: "2+",
   parentCompany: "Luminix Clean Energy Holdings Group",
+  association: "A & V Agrivoltaics",
   gstin: "09ccvpv0642n1zm",
   mnreVendorId: "MNRE/RTS/2023/8842",
   isoCertifications: "ISO 9001:2015 & ISO 14001:2015 Certified",
-  phone: "+91 9793078997",
-  phoneDisplay: "+91 9793078997",
-  whatsapp: "+919793078997",
+  phone: "+91 9129054008",
+  phoneDisplay: "+91 9129054008",
+  whatsapp: "+919129054008",
   email: "luminixsolar2025@gmail.com",
   supportEmail: "luminixsolar2025@gmail.com",
   address: "MP - 2824, DASHAHARABAG MAKHDUMPUR ROAD, NEAR GOBIND INDUSTRIES I UNIT, NAWABGANJ BARABANKI, UTTAR PRADESH - 225001",
