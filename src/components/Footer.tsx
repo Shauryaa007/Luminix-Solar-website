@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import Image from 'next/image';
 import { ChevronDown, Mail, Navigation, Phone } from 'lucide-react';
 import { COMPANY_INFO } from '@/data/solarData';
@@ -25,6 +25,7 @@ type Office = {
   name: string;
   address?: string;
   phones: string[];
+  mapsUrl?: string;
 };
 
 const OFFICES: Office[] = [
@@ -34,18 +35,22 @@ const OFFICES: Office[] = [
     phones: ['8127554008'],
   },
   {
-    name: 'Bijnaur office, Lucknow',
-    address: 'Subhash Hotel, Mati, Bijnaur Road, Lucknow (226002)',
-    phones: ['9793078997', '8127554008'],
-  },
-  {
     name: 'Alamnagar branch',
+    address: 'Kanak City Saripura Road, Alam Nagar, Near by Shukla Timber, 226017',
     phones: ['9793078997'],
+    mapsUrl: 'https://www.google.com/maps?q=26.8503425,80.8632709&z=17&hl=en',
   },
   {
     name: 'Indira Nagar branch',
+    address: 'North City Manas Enclave, Picnic spot road, near City International school, Indira nagar, Lucknow, 226016',
     phones: ['7355464235'],
+    mapsUrl: 'https://www.google.com/maps/search/Amaan%20Market/@26.90060395,81.00299439,17z?hl=en',
   },
+   // {
+  //   name: 'Bijnaur office, Lucknow',
+  //   address: 'Subhash Hotel, Mati, Bijnaur Road, Lucknow (226002)',
+  //   phones: ['9793078997', '8127554008'],
+  // },
 ];
 
 const formatPhone = (digits: string) => `${digits.slice(0, 5)} ${digits.slice(5)}`;
@@ -150,7 +155,7 @@ export default function Footer() {
 
                         {office.address && (
                           <a
-                            href={mapsLink(office.address)}
+                            href={office.mapsUrl || mapsLink(office.address)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1.5 font-semibold text-emerald-300 hover:underline"
