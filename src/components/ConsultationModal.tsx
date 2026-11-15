@@ -110,20 +110,20 @@ export default function ConsultationModal({
               />
             </div>
 
-            <p className="mt-8 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-300">
-              Let&apos;s go solar
-            </p>
+            <div className="mt-7 inline-flex max-w-full items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-medium text-emerald-200 backdrop-blur-xs">
+              <Sun className="h-3.5 w-3.5 shrink-0 text-emerald-300" />
+              <span className="truncate">{COMPANY_INFO.tagline}</span>
+            </div>
 
-            <h2 className="mt-3 text-2xl font-bold leading-tight lg:text-3xl">
-              A brighter roof.
-              <span className="mt-1 block text-emerald-300">
-                A smarter future.
+            <h2 className="mt-4 text-2xl font-medium leading-[1.2] tracking-tight lg:text-3xl">
+              The Future of
+              <span className="mt-1 block font-semibold text-emerald-300">
+                Green Energy
               </span>
             </h2>
 
-            <p className="mt-4 text-sm leading-6 text-emerald-50/70">
-              Tell us about your property. We&apos;ll help you explore a solar
-              solution suited to your energy requirements.
+            <p className="mt-3 text-xs leading-5 text-emerald-50/70 lg:text-sm lg:leading-6">
+              Leading rooftop solar solutions across Uttar Pradesh. Save up to 90% on electricity bills with PM Surya Ghar and PMFME Scheme subsidies.
             </p>
 
             <div className="mt-8 space-y-5">
@@ -171,7 +171,7 @@ export default function ConsultationModal({
               LuminixSolar
             </div>
             <p className="mt-2 text-[11px] leading-5 text-emerald-100/45">
-              Clean energy. Brighter future.
+              {COMPANY_INFO.tagline}
             </p>
           </div>
         </aside>

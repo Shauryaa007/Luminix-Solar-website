@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import {
@@ -6,9 +6,9 @@ import {
   BadgeCheck,
   Building2,
   FileText,
-  Handshake,
   Landmark,
   Sun,
+  UserCheck,
 } from 'lucide-react';
 
 import { ConsultationPrefillData } from '@/components/ConsultationForm';
@@ -92,21 +92,21 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                     <Building2 className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
-                    <dt className="text-xs text-slate-500">Registered entity &amp; base</dt>
+                    <dt className="text-xs text-slate-500">Registered Trade Name</dt>
                     <dd className="text-sm font-semibold text-slate-900 sm:text-base">
-                      Luminix Solar Pvt. Ltd. (Barabanki, UP)
+                      Luminix Solar (Barabanki, UP)
                     </dd>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3.5 py-3">
                   <span className={rowIcon}>
-                    <Handshake className="h-4 w-4" />
+                    <UserCheck className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
-                    <dt className="text-xs text-slate-500">In association with</dt>
+                    <dt className="text-xs text-slate-500">Legal Proprietor</dt>
                     <dd className="text-sm font-semibold text-emerald-950 sm:text-base">
-                      A &amp; V Agrivoltaics
+                      Neelam Verma
                     </dd>
                   </div>
                 </div>
