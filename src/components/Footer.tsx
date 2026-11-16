@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import Image from 'next/image';
 import { ChevronDown, Mail, Navigation, Phone } from 'lucide-react';
 import { COMPANY_INFO } from '@/data/solarData';
@@ -175,7 +175,7 @@ export default function Footer() {
           {/* Bottom bar */}
           <div className="mt-12 flex flex-col gap-3 border-t border-white/15 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-white/60">
-              © {year} Luminix Solar Pvt. Ltd. in association with A &amp; V Agrivoltaics. All
+              © {year} Luminix Solar in association with A &amp; V Agrivoltaics. All
               rights reserved.
             </p>
 

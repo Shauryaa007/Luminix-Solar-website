@@ -79,7 +79,7 @@ export interface ConsultationPrefillData {
   propertyType?: string;
 }
 
-export const PANEL_COMPANIES = ['TATA', 'ADANI', 'WARI', 'UTL', 'OTHERS'] as const;
+export const PANEL_COMPANIES = ['TATA', 'ADANI', 'WAAREE', 'UTL', 'OTHERS'] as const;
 
 export const BILL_STEPS = [
   '≤ ₹1,000',
@@ -337,7 +337,7 @@ export default function ConsultationForm({
 
     // 5. Panel Company (Mandatory)
     if (!panelCompany) {
-      setErrorMessage('Please select your preferred panel company (TATA, ADANI, WARI, UTL, or OTHERS).');
+      setErrorMessage('Please select your preferred panel company (TATA, ADANI, WAAREE, UTL, or OTHERS).');
       setErrorField('panelCompany');
       return;
     }
