@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import {
@@ -94,7 +94,7 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                   <div className="min-w-0">
                     <dt className="text-xs text-slate-500">Registered Trade Name</dt>
                     <dd className="text-sm font-semibold text-slate-900 sm:text-base">
-                      Luminix Solar (Barabanki, UP)
+                      Luminix Solar in association with A & V Agrivoltaics (Barabanki, UP)
                     </dd>
                   </div>
                 </div>
@@ -145,9 +145,9 @@ export default function AboutSection({ onOpenConsultation }: AboutSectionProps =
                     <BadgeCheck className="h-4 w-4" />
                   </span>
                   <div className="min-w-0">
-                    <dt className="text-xs text-slate-500">MNRE vendor ID</dt>
+                    <dt className="text-xs text-slate-500">MNRE vendor Code</dt>
                     <dd className="break-all text-sm font-semibold tracking-wide text-slate-900 sm:text-base">
-                      MNRE/RTS/2023/8842
+                      BBK2506102759
                     </dd>
                   </div>
                 </div>
