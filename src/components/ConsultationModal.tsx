@@ -103,7 +103,7 @@ export default function ConsultationModal({
             <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl bg-white p-1.5 shadow-lg">
               <Image
                 src={COMPANY_INFO.logo}
-                alt="LuminixSolar logo"
+                alt="Luminix Solar logo"
                 width={48}
                 height={48}
                 className="h-full w-full object-contain"
@@ -168,7 +168,7 @@ export default function ConsultationModal({
           <div className="relative mt-auto border-t border-white/10 pt-6">
             <div className="flex items-center gap-2 text-xs font-medium text-emerald-100/70">
               <Sun className="h-4 w-4 text-emerald-300" />
-              LuminixSolar
+              Luminix Solar
             </div>
             <p className="mt-2 text-[11px] leading-5 text-emerald-100/45">
               {COMPANY_INFO.tagline}

@@ -1,4 +1,4 @@
-﻿import { StaticImageData } from 'next/image';
+import { StaticImageData } from 'next/image';
 import img1 from './completed-project/img1.jpg';
 import img2 from './completed-project/img2.jpg';
 import img3 from './completed-project/img3.jpg';
@@ -59,7 +59,7 @@ export interface FaqItem {
 }
 
 export const COMPANY_INFO = {
-  name: "LUMINIX SOLAR PVT. LTD.",
+  name: "Luminix Solar",
   brandName: "LUMINIX SOLAR",
   tagline: "Clean Energy for a Brighter Tomorrow",
   logo: "/images/logo.png",
@@ -67,7 +67,7 @@ export const COMPANY_INFO = {
   yearsOfExperience: "2+",
   parentCompany: "Luminix Clean Energy Holdings Group",
   association: "A & V Agrivoltaics",
-  gstin: "09ccvpv0642n1zm",
+  gstin: "09CCVPV0642N1ZM",
   mnreVendorId: "MNRE/RTS/2023/8842",
   isoCertifications: "ISO 9001:2015 & ISO 14001:2015 Certified",
   phone: "+91 9129054008",
@@ -321,7 +321,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Sunil Kumar Srivastav",
     category: "Residential",
-    location: "janshwara, Uttar Pradesh",
+    location: "Janshwara, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
     annualGeneration: "5,940 kWh / Year",
     image: img1,

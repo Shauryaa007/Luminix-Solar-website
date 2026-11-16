@@ -42,9 +42,9 @@ export const metadata: Metadata = {
     "Luminix Solar",
     "solar hybrid inverter Lucknow",
   ],
-  authors: [{ name: "Luminix Solar Pvt. Ltd." }],
-  creator: "Luminix Solar Pvt. Ltd.",
-  publisher: "Luminix Solar Pvt. Ltd.",
+  authors: [{ name: "Luminix Solar" }],
+  creator: "Luminix Solar",
+  publisher: "Luminix Solar",
   alternates: {
     canonical: siteUrl,
   },
@@ -100,13 +100,13 @@ const jsonLd = {
     {
       "@type": ["LocalBusiness", "ProfessionalService"],
       "@id": `${siteUrl}/#organization`,
-      name: "Luminix Solar Pvt. Ltd.",
+      name: "Luminix Solar",
       url: siteUrl,
       logo: `${siteUrl}/images/logo.png`,
       image: `${siteUrl}/images/hero-solar.jpg`,
       description:
         "Leading rooftop solar installation partner in Lucknow and Barabanki, Uttar Pradesh, in association with A & V Agrivoltaics. Empanelled under MNRE PM Surya Ghar Muft Bijli Yojana providing turnkey solar systems with up to 90% bill savings.",
-      telephone: "+91-9793078997",
+      telephone: "+91-9129054008",
       email: "luminixsolar2025@gmail.com",
       priceRange: "₹₹",
       areaServed: [

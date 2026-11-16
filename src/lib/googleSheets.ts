@@ -63,7 +63,7 @@ export function formatStandardText(text?: string | null): string {
     .split(/\s+/)
     .map((word) => {
       const upper = word.toUpperCase();
-      if (['PM', 'PMSG', 'PMFME', 'PIN', 'KW', 'IST'].includes(upper)) {
+      if (['PM', 'PMSG', 'PMFME', 'PIN', 'KW', 'IST', 'UTL'].includes(upper)) {
         return upper === 'KW' ? 'kW' : upper;
       }
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
