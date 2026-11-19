@@ -1,4 +1,4 @@
-import { StaticImageData } from 'next/image';
+﻿import { StaticImageData } from 'next/image';
 import img1 from './completed-project/img1.jpg';
 import img2 from './completed-project/img2.jpg';
 import img3 from './completed-project/img3.jpg';
@@ -7,7 +7,7 @@ import img5 from './completed-project/img5.jpg';
 import img6 from './completed-project/img6.jpg';
 import img8 from './completed-project/img8.png';
 import img9 from './completed-project/img9.png';
-import img10 from './completed-project/img10.png';
+// import img11 from './completed-project/img11.png';
 
 export interface Product {
   id: string;
@@ -418,19 +418,19 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     installationDate: "October 2025",
     description: "High-capacity elevated solar shed structure powering micro food processing machinery under the PMFME scheme.",
   },
-  {
-    id: "proj-9",
-    title: "PMFME Food Processing Unit",
-    customerName: "Gramin Food Processing Center",
-    category: "Commercial",
-    scheme: "PMFME Scheme",
-    location: "Lucknow Rural, Uttar Pradesh",
-    capacity: "20 kW Solar Installation",
-    annualGeneration: "39,600 kWh / Year",
-    image: img10,
-    installationDate: "November 2025",
-    description: "Commercial solar shed installation for agro and food processing facility with PMFME government subsidy support.",
-  }
+  // {
+  //   id: "proj-9",
+  //   title: "PMFME Food Processing Unit",
+  //   customerName: "Gramin Food Processing Center",
+  //   category: "Commercial",
+  //   scheme: "PMFME Scheme",
+  //   location: "Lucknow Rural, Uttar Pradesh",
+  //   capacity: "20 kW Solar Installation",
+  //   annualGeneration: "39,600 kWh / Year",
+  //   image: img11,
+  //   installationDate: "November 2025",
+  //   description: "Commercial solar shed installation for agro and food processing facility with PMFME government subsidy support.",
+  // }
 ];
 
 export const FAQ_DATA: FaqItem[] = [
