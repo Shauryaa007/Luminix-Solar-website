@@ -5,6 +5,9 @@ import img3 from './completed-project/img3.jpg';
 import img4 from './completed-project/img4.jpg';
 import img5 from './completed-project/img5.jpg';
 import img6 from './completed-project/img6.jpg';
+import img8 from './completed-project/img8.png';
+import img9 from './completed-project/img9.png';
+import img10 from './completed-project/img10.png';
 
 export interface Product {
   id: string;
@@ -43,6 +46,7 @@ export interface CompletedProject {
   title: string;
   customerName: string;
   category: 'Residential' | 'Commercial';
+  scheme?: string;
   location: string;
   capacity: string;
   annualGeneration?: string;
@@ -387,6 +391,45 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     image: img6,
     installationDate: "July 2026",
     description: "Elevated customized pergola structure providing usable shaded terrace space alongside 92% electricity generation.",
+  },
+  {
+    id: "proj-7",
+    title: "PMFME Solar Installation",
+    customerName: "Habibpur Enterprise",
+    category: "Commercial",
+    scheme: "PMFME Scheme",
+    location: "Rajajipuram, Lucknow, Uttar Pradesh",
+    capacity: "5 kW On-Grid System",
+    annualGeneration: "9,900 kWh / Year",
+    image: img8,
+    installationDate: "September 2025",
+    description: "Elevated customized rooftop solar pergola structure commissioned under the PMFME scheme for micro-enterprise operations.",
+  },
+  {
+    id: "proj-8",
+    title: "PMFME Agro-Solar Plant",
+    customerName: "Kisan Agro Processing Unit",
+    category: "Commercial",
+    scheme: "PMFME Scheme",
+    location: "Barabanki, Uttar Pradesh",
+    capacity: "15 kW Solar Setup",
+    annualGeneration: "29,700 kWh / Year",
+    image: img9,
+    installationDate: "October 2025",
+    description: "High-capacity elevated solar shed structure powering micro food processing machinery under the PMFME scheme.",
+  },
+  {
+    id: "proj-9",
+    title: "PMFME Food Processing Unit",
+    customerName: "Gramin Food Processing Center",
+    category: "Commercial",
+    scheme: "PMFME Scheme",
+    location: "Lucknow Rural, Uttar Pradesh",
+    capacity: "20 kW Solar Installation",
+    annualGeneration: "39,600 kWh / Year",
+    image: img10,
+    installationDate: "November 2025",
+    description: "Commercial solar shed installation for agro and food processing facility with PMFME government subsidy support.",
   }
 ];
 

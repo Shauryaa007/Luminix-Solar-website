@@ -11,6 +11,7 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
+  Award,
 } from 'lucide-react';
 import {
   COMPLETED_PROJECTS,
@@ -303,9 +304,17 @@ export default function CompletedProjectsSection({
                     {project.capacity}
                   </div>
 
-                  {/* Category badge */}
-                  <div className="absolute right-3.5 top-3.5 rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-                    {project.category}
+                  {/* Scheme & Category badges */}
+                  <div className="absolute right-3.5 top-3.5 flex flex-col items-end gap-1.5">
+                    {project.scheme && (
+                      <div className="inline-flex items-center gap-1 rounded-lg border border-amber-300/40 bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-950 shadow-lg backdrop-blur-md">
+                        <Award className="h-3 w-3 text-slate-950" />
+                        {project.scheme}
+                      </div>
+                    )}
+                    <div className="rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
+                      {project.category}
+                    </div>
                   </div>
 
                   {/* Bottom details */}
@@ -393,9 +402,17 @@ export default function CompletedProjectsSection({
                       {project.capacity}
                     </div>
 
-                    {/* Category badge */}
-                    <div className="absolute right-3.5 top-3.5 rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-                      {project.category}
+                    {/* Scheme & Category badges */}
+                    <div className="absolute right-3.5 top-3.5 flex flex-col items-end gap-1.5">
+                      {project.scheme && (
+                        <div className="inline-flex items-center gap-1 rounded-lg border border-amber-300/40 bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-slate-950 shadow-lg backdrop-blur-md">
+                          <Award className="h-3 w-3 text-slate-950" />
+                          {project.scheme}
+                        </div>
+                      )}
+                      <div className="rounded-lg border border-white/20 bg-black/40 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
+                        {project.category}
+                      </div>
                     </div>
 
                     {/* Bottom details */}
@@ -492,6 +509,13 @@ export default function CompletedProjectsSection({
                 sizes="(max-width: 640px) 100vw, 520px"
               />
 
+              {selectedGalleryProject.scheme && (
+                <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-lg border border-amber-300/40 bg-gradient-to-r from-amber-500 to-amber-600 px-3 py-1.5 text-xs font-extrabold uppercase tracking-wider text-slate-950 shadow-lg">
+                  <Award className="h-3.5 w-3.5 text-slate-950" />
+                  {selectedGalleryProject.scheme}
+                </div>
+              )}
+
               <button
                 type="button"
                 autoFocus
@@ -506,9 +530,17 @@ export default function CompletedProjectsSection({
             {/* Details */}
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 [-ms-overflow-style:none] [scrollbar-width:none] sm:p-8 [&::-webkit-scrollbar]:hidden">
-                <p className="text-sm font-medium text-emerald-700">
-                  {selectedGalleryProject.category}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-sm font-medium text-emerald-700">
+                    {selectedGalleryProject.category}
+                  </p>
+                  {selectedGalleryProject.scheme && (
+                    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-bold text-amber-900">
+                      <Award className="h-3 w-3 text-amber-700" />
+                      {selectedGalleryProject.scheme}
+                    </span>
+                  )}
+                </div>
 
                 <h3
                   id="project-modal-title"
@@ -551,6 +583,15 @@ export default function CompletedProjectsSection({
                       <p className="text-xs text-slate-500">Completed</p>
                       <p className="mt-1 text-base font-semibold text-slate-900">
                         {selectedGalleryProject.installationDate}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedGalleryProject.scheme && (
+                    <div className="col-span-2 rounded-xl border border-amber-200/80 bg-amber-50/70 p-4">
+                      <p className="text-xs font-semibold text-amber-800">Government Scheme</p>
+                      <p className="mt-1 text-base font-bold text-slate-900">
+                        {selectedGalleryProject.scheme}
                       </p>
                     </div>
                   )}
