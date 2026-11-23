@@ -1,4 +1,4 @@
-﻿import { StaticImageData } from 'next/image';
+import { StaticImageData } from 'next/image';
 import img1 from './completed-project/img1.jpg';
 import img2 from './completed-project/img2.jpg';
 import img3 from './completed-project/img3.jpg';
@@ -325,6 +325,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Sunil Kumar Srivastav",
     category: "Residential",
+    scheme: "PM Surya Ghar Scheme",
     location: "Janshwara, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
     annualGeneration: "5,940 kWh / Year",
@@ -337,6 +338,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Renu Shukla",
     category: "Residential",
+    scheme: "PM Surya Ghar Scheme",
     location: "Barabanki, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
     annualGeneration: "5,940 kWh / Year",
@@ -349,6 +351,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Usha Tiwari",
     category: "Residential",
+    scheme: "PM Surya Ghar Scheme",
     location: "Lucknow, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
     annualGeneration: "5,940 kWh / Year",
@@ -361,6 +364,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Rukhsana",
     category: "Residential",
+    scheme: "PM Surya Ghar Scheme",
     location: "Barabanki, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
     annualGeneration: "5,940 kWh / Year",
@@ -373,6 +377,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Raj Rani Tandon",
     category: "Residential",
+    scheme: "PM Surya Ghar Scheme",
     location: "Satrikh, Uttar Pradesh",
     capacity: "3 kW On-Grid System",
     annualGeneration: "5,940 kWh / Year",
@@ -385,6 +390,7 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
     title: "Rooftop Solar Installation",
     customerName: "Jamal Fatima",
     category: "Residential",
+    scheme: "PM Surya Ghar Scheme",
     location: "Lucknow, Uttar Pradesh",
     capacity: "5 kW On-Grid System",
     annualGeneration: "9,900 kWh / Year",
@@ -395,15 +401,15 @@ export const COMPLETED_PROJECTS: CompletedProject[] = [
   {
     id: "proj-7",
     title: "PMFME Solar Installation",
-    customerName: "Habibpur Enterprise",
-    category: "Commercial",
+    customerName: "Mohini Verma",
+    category: "Residential",
     scheme: "PMFME Scheme",
     location: "Rajajipuram, Lucknow, Uttar Pradesh",
-    capacity: "5 kW On-Grid System",
-    annualGeneration: "9,900 kWh / Year",
+    capacity: "3 kW On-Grid System",
+    annualGeneration: "5,940 kWh / Year",
     image: img8,
     installationDate: "September 2025",
-    description: "Elevated customized rooftop solar pergola structure commissioned under the PMFME scheme for micro-enterprise operations.",
+    description: "Elevated customized rooftop solar pergola structure commissioned under the PMFME scheme, providing usable shaded terrace space alongside clean electricity generation.",
   },
   {
     id: "proj-8",
